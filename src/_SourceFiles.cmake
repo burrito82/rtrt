@@ -2,17 +2,9 @@
 
 set( RelativeDir "./src" )
 set( RelativeSourceGroup "source" )
-set( SubDirs )
+set( SubDirs math scene )
 
 set( DirFiles
-    HitPoint.h
-    Intersection.cu
-    Intersection.cuh
-    Normal.h
-    Point.h
-    Ray.h
-    Vector.h
-
     LibraryConfig.h
     _SourceFiles.cmake
 )

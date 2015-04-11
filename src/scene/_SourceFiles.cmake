@@ -1,19 +1,15 @@
 # $Id:$
 
-set( RelativeDir "./src" )
-set( RelativeSourceGroup "source" )
+set( RelativeDir "./src/scene" )
+set( RelativeSourceGroup "source\\scene" )
 set( SubDirs )
 
 set( DirFiles
     HitPoint.h
     Intersection.cu
     Intersection.cuh
-    Normal.h
-    Point.h
     Ray.h
-    Vector.h
 
-    LibraryConfig.h
     _SourceFiles.cmake
 )
 set( DirFiles_SourceGroup "${RelativeSourceGroup}" )

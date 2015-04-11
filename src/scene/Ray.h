@@ -1,9 +1,9 @@
 #ifndef RTRT_RAY_H
 #define RTRT_RAY_H
 
-#include "LibraryConfig.h"
-#include "Normal.h"
-#include "Vector.h"
+#include "../LibraryConfig.h"
+#include "../math/Normal.h"
+#include "../math/Vector.h"
 
 namespace rtrt
 {
