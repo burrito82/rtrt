@@ -2,12 +2,14 @@
 
 set( RelativeDir "./src/scene" )
 set( RelativeSourceGroup "source\\scene" )
-set( SubDirs )
+set( SubDirs accel)
 
 set( DirFiles
+    BoundingBox.h
     HitPoint.h
     Intersection.cu
     Intersection.cuh
+    Intersection.h
     Ray.h
 
     _SourceFiles.cmake

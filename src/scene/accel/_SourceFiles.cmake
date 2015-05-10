@@ -1,15 +1,10 @@
 # $Id:$
 
-set( RelativeDir "./src/math" )
-set( RelativeSourceGroup "source\\math" )
+set( RelativeDir "./src/scene/accel" )
+set( RelativeSourceGroup "source\\scene\\accel" )
 set( SubDirs )
 
 set( DirFiles
-    Normal.h
-    Point.h
-    Transformation.h
-    Quaternion.h
-    Vector.h
 
     _SourceFiles.cmake
 )

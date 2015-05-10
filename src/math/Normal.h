@@ -24,7 +24,7 @@ namespace rtrt
 
 struct RTRTAPI Normal : public float4
 {
-    Normal(float x_ = 0.0f, float y_ = 0.0f, float z_ = 0.0f)
+    Normal(float x_, float y_, float z_)
     {
         x = x_;
         y = y_;

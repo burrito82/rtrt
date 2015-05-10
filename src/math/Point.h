@@ -29,6 +29,26 @@ struct RTRTAPI Point : public float4
         z = z_;
         w = 1.0f;
     }
+
+    // index access
+    float &operator[](size_t index)
+    {
+        // return (&x)[index];
+        switch (index)
+        {
+        case 0: return x;
+        case 1: return y;
+        case 2: return z;
+        case 3: return w;
+        default:
+            return x;
+        }
+    }
+
+    float operator[](size_t index) const
+    {
+        return const_cast<Point *>(this)->operator[](index);
+    }
 };
 
 // add offset

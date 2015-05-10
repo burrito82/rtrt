@@ -6,12 +6,12 @@
 namespace rtrt
 {
 
-__global__ void Intersect(Scene const *pScene,
+/*__global__ void Intersect(Scene const *pScene,
                           Ray const *pRay,
                           HitPoint *pHitPoints)
 {
 
-}
+}*/
 
 }
 
