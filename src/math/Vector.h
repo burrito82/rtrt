@@ -40,7 +40,7 @@ struct RTRTAPI Vector : public float4
         case 0: return x;
         case 1: return y;
         case 2: return z;
-        case 4: return w;
+        case 3: return w;
         default:
             return x;
         }
@@ -51,6 +51,11 @@ struct RTRTAPI Vector : public float4
         return const_cast<Vector *>(this)->operator[](index);
     }
 };
+
+Vector const operator-(Vector const &n)
+{
+    return Vector{-n.x, -n.y, -n.z};
+}
 
 // addition
 Vector const operator+(Vector const &lhs, Vector const &rhs)
