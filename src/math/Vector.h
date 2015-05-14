@@ -1,5 +1,5 @@
-#ifndef RTRT_VECTOR_H
-#define RTRT_VECTOR_H
+#ifndef RTRT_MATH_VECTOR_H
+#define RTRT_MATH_VECTOR_H
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
@@ -49,6 +49,52 @@ struct RTRTAPI Vector : public float4
     float operator[](size_t index) const
     {
         return const_cast<Vector *>(this)->operator[](index);
+    }
+
+    float Dot(Vector const &rhs) const
+    {
+        return x * rhs.x
+            + y * rhs.y
+            + z * rhs.z;
+    }
+
+    float AbsDot(Vector const &rhs) const
+    {
+        return std::abs(this->Dot(rhs));
+    }
+
+    Vector const Cross(Vector const &rhs) const
+    {
+        return Vector
+        {
+            y * rhs.z - z * rhs.y,
+            z * rhs.x - x * rhs.z,
+            x * rhs.y - y * rhs.x
+        };
+    }
+
+    float LengthSquared() const
+    {
+        return this->Dot(*this);
+    }
+
+    float Length() const
+    {
+        return std::sqrt(this->LengthSquared());
+    }
+
+    Vector &Normalize()
+    {
+        float const fLength = Length();
+        x /= fLength;
+        y /= fLength;
+        z /= fLength;
+        return *this;
+    }
+
+    Vector const Normalized() const
+    {
+        return Vector{*this}.Normalize();
     }
 };
 
@@ -197,4 +243,4 @@ void CoordinateSystem(Vector const &v0, Vector &v1, Vector &v2)
 
 } // namespace rtrt
 
-#endif // ! RTRT_VECTOR_H
+#endif // ! RTRT_MATH_VECTOR_H

@@ -11,6 +11,8 @@ set( DirFiles
     Intersection.cuh
     Intersection.h
     Ray.h
+    TriangleObject.cpp
+    TriangleObject.h
 
     _SourceFiles.cmake
 )

@@ -1,5 +1,5 @@
-#ifndef RTRT_NORMAL_H
-#define RTRT_NORMAL_H
+#ifndef RTRT_MATH_NORMAL_H
+#define RTRT_MATH_NORMAL_H
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
@@ -24,6 +24,10 @@ namespace rtrt
 
 struct RTRTAPI Normal : public float4
 {
+    Normal()
+    {
+        x = y = z = w = -1.0f;
+    }
     Normal(float x_, float y_, float z_)
     {
         x = x_;
@@ -190,4 +194,4 @@ Normal FaceForward(Normal const &n, Vector const &v)
 
 } // namespace rtrt
 
-#endif // ! RTRT_NORMAL_H
+#endif // ! RTRT_MATH_NORMAL_H

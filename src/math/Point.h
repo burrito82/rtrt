@@ -1,5 +1,5 @@
-#ifndef RTRT_POINT_H
-#define RTRT_POINT_H
+#ifndef RTRT_MATH_POINT_H
+#define RTRT_MATH_POINT_H
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
@@ -132,4 +132,4 @@ float Distance(Point const &lhs, Point const &rhs)
 
 } // namespace rtrt
 
-#endif // ! RTRT_POINT_H
+#endif // ! RTRT_MATH_POINT_H

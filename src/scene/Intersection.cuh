@@ -1,7 +1,7 @@
 #ifndef RTRT_INTERSECTION_CUH
 #define RTRT_INTERSECTION_CUH
 
-#include "Ray.h"
+//#include "Ray.h"
 
 namespace rtrt
 {

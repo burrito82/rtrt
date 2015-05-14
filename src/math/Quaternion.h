@@ -1,16 +1,14 @@
-#ifndef RTRT_POINT_H
-#define RTRT_POINT_H
-
-#include <vector_types.h>
+#ifndef RTRT_MATH_QUATERNION_H
+#define RTRT_MATH_QUATERNION_H
 
 namespace rtrt
 {
 
-struct RTRTAPI Point : public float4
+struct Quaternion
 {
 
 };
 
 }
 
-#endif // ! RTRT_POINT_H
+#endif // ! RTRT_MATH_QUATERNION_H
