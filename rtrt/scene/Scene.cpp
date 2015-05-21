@@ -10,6 +10,7 @@
 #include <iterator>
 
 // REMOVE
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <vector>
@@ -103,6 +104,7 @@ void Scene::Synchronize()
 
 void Scene::Test()
 {
+    cuda::KernelCheck();
     cuda::Scene oCpuScene{};
     oCpuScene.m_pPoints = m_vecPoints.data();
     oCpuScene.m_pNormals = m_vecNormals.data();
@@ -111,32 +113,39 @@ void Scene::Test()
 
     rtrt::VectorMemory<Ray> vecRays{};
     rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecHitPoints{};
+    int yDim = 32;
+    int xDim = 64;
+    float z = 10;
 
-    for (int y = -25; y <= 25; ++y)
+    for (int y = -yDim; y <= yDim; ++y)
     {
-        for (int x = -50; x <= 50; ++x)
+        for (int x = -xDim; x <= xDim; ++x)
         {
-            vecRays.push_back(Ray{Point{static_cast<float>(x) / 25.0f, -static_cast<float>(y) / 12.5f, 15.0f}, Normal{0.0f, 0.0f, -1.0f}});
+            vecRays.push_back(Ray{Point{static_cast<float>(x) / (0.5f * xDim), -static_cast<float>(y) / (0.5f * yDim), z}, Normal{0.0f, 0.0f, -1.0f}});
         }
     }
+    cuda::KernelCheck();
     vecRays.Synchronize();
+    cuda::KernelCheck();
 
     // CPU
+    auto startTime = std::chrono::system_clock::now();
     int iRay = 0;
-    for (int y = -25; y <= 25; ++y)
+    for (int y = -yDim; y <= yDim; ++y)
     {
-        for (int x = -50; x <= 50; ++x)
+        for (int x = -xDim; x <= xDim; ++x)
         {
             vecHitPoints.push_back(oCpuScene.Intersect(vecRays[iRay++]));
         }
     }
+    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() << " ms" << std::endl;
 
     // DRAW
     iRay = 0;
-    for (int y = -25; y <= 25; ++y)
+    for (int y = -yDim; y <= yDim; ++y)
     {
         std::cout << '|';
-        for (int x = -50; x <= 50; ++x)
+        for (int x = -xDim; x <= xDim; ++x)
         {
             cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
             if (hitpoint)
@@ -151,27 +160,35 @@ void Scene::Test()
         std::cout << "|\n";
     }
 
-    for (int x = -50; x <= 50; ++x)
+    std::cout << 'x';
+    for (int x = -xDim; x <= xDim; ++x)
     {
         std::cout << '=';
     }
-    std::cout << '\n';
+    std::cout << "x\n";
 
     // GPU
+    startTime = std::chrono::system_clock::now();
     vecHitPoints.resize(vecRays.size());
-    dim3 blockDim{static_cast<unsigned int>(vecRays.size())};
-    dim3 gridDim{};
+    cuda::KernelCheck();
+    unsigned int iNoRays = static_cast<unsigned int>(vecRays.size());
+    unsigned int iThreadsPerBlock = 1024;
+    dim3 blockDim{iThreadsPerBlock};
+    dim3 gridDim{(iNoRays - 1) / iThreadsPerBlock + 1};
     using cuda::kernel::Raytrace;
-    Raytrace(blockDim, gridDim, m_pSceneCuda->CudaPointer(), vecRays.CudaPointer(), vecHitPoints.CudaPointer());
-    cuda::Checked(cudaDeviceSynchronize());
+    cuda::KernelCheck();
+    Raytrace(blockDim, gridDim, m_pSceneCuda->CudaPointer(), vecRays.CudaPointer(), vecRays.size(), vecHitPoints.CudaPointer());
+    cuda::KernelCheck();
     vecHitPoints.Synchronize();
+    cuda::KernelCheck();
+    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() << " ms" << std::endl;
 
     // DRAW
     iRay = 0;
-    for (int y = -25; y <= 25; ++y)
+    for (int y = -yDim; y <= yDim; ++y)
     {
         std::cout << '|';
-        for (int x = -50; x <= 50; ++x)
+        for (int x = -xDim; x <= xDim; ++x)
         {
             cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
             if (hitpoint)

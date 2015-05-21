@@ -25,20 +25,23 @@ namespace cuda
 namespace kernel
 {
 
-__host__ void Raytrace(dim3 blockDim, dim3 gridDim, Scene const * const pScene, Ray const *pRays, HitPoint *pHitPoints)
+__host__ void Raytrace(dim3 blockDim, dim3 gridDim, Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints)
 {
-    impl::Raytrace<<<gridDim, blockDim>>>(pScene, pRays, pHitPoints);
+    KernelCheck();
+    impl::Raytrace<<<gridDim, blockDim>>>(pScene, pRays, iNumberOfRays, pHitPoints);
     KernelCheck();
 }
 
 namespace impl
 {
 __global__
-void Raytrace(Scene const *pScene, Ray const *pRays, HitPoint *pHitPoints)
+void Raytrace(Scene const *pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints)
 {
-    auto iLocalId = threadIdx.x + blockIdx.x * gridDim.x;
-    printf("threadId: %d\n", iLocalId);
-    pHitPoints[iLocalId] = pScene->Intersect(pRays[iLocalId]);
+    int iLocalId = threadIdx.x + blockIdx.x * blockDim.x;
+    if (iLocalId < iNumberOfRays)
+    {
+        pHitPoints[iLocalId] = pScene->Intersect(pRays[iLocalId]);
+    }
 }
 } // namespace impl
 } // namespace kernel

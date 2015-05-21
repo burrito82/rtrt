@@ -33,10 +33,10 @@ struct Scene
 
         for (size_t iTriangleObjectIndex = 0; iTriangleObjectIndex < m_iNumberOfTriangleObjects; ++iTriangleObjectIndex)
         {
-            size_t iTriangleOffset = m_pTriangleObjects[iTriangleObjectIndex].m_iStartIndex;
-            for (size_t iTriangleIndex = iTriangleOffset;
-                 iTriangleIndex < m_pTriangleObjects[iTriangleObjectIndex].m_iNumberOfTriangles + iTriangleOffset;
-                 ++iTriangleIndex)
+            size_t const iTriangleBegin = m_pTriangleObjects[iTriangleObjectIndex].m_iStartIndex;
+            size_t const iTriangleEnd = m_pTriangleObjects[iTriangleObjectIndex].m_iNumberOfTriangles + iTriangleBegin;
+
+            for (size_t iTriangleIndex = iTriangleBegin; iTriangleIndex < iTriangleEnd; ++iTriangleIndex)
             {
                 float fDistance = IntersectTriangleWoop(rRay, GetTrianglePoints(iTriangleIndex));
                 if (fDistance > 0.0f && fDistance < oHitPoint.m_fDistance)
@@ -80,12 +80,12 @@ struct Scene
 namespace kernel
 {
 
-__host__ void Raytrace(dim3 blockDim, dim3 gridDim, Scene const * const pScene, Ray const *pRays, HitPoint *pHitPoints);
+__host__ void Raytrace(dim3 blockDim, dim3 gridDim, Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints);
 
 namespace impl
 {
 
-__global__ void Raytrace(Scene const * const pScene, Ray const *pRays, HitPoint *pHitPoints);
+__global__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints);
 
 } // namespace impl
 } // namespace kernel
