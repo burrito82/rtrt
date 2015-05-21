@@ -1,14 +1,13 @@
-#ifndef RTRT_SCENE_TRIANGLE_CUH
-#define RTRT_SCENE_TRIANGLE_CUH
+#ifndef RTRT_SCENE_ACCEL_BVHCONSTRUCTOR_H
+#define RTRT_SCENE_ACCEL_BVHCONSTRUCTOR_H
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "accel/BvhNode.h"
-#include "../math/Normal.h"
-#include "../math/Point.h"
+#include "BvhNode.h"
 
-#include <thrust/tuple.h>
+#include <memory>
+#include <vector>
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -18,8 +17,9 @@
 /*============================================================================*/
 namespace rtrt
 {
-namespace cuda
+namespace bvh
 {
+//class BvhTmpNode;
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
@@ -28,18 +28,30 @@ namespace cuda
 /* CLASS DEFINITIONS                                                          */
 /*============================================================================*/
 
-using TrianglePoints = thrust::tuple<Point, Point, Point>;
-using TriangleNormals = thrust::tuple<Normal, Normal, Normal>;
-
-struct TriangleObjectDesc
+/**
+ * @param
+ * @return
+ * @see
+ * @todo
+ * @bug
+ * @deprecated
+ */
+class BvhBuilder
 {
-    size_t m_iStartIndex;
-    size_t m_iNumberOfTriangles;
-    bvh::BvhNode *m_pBvh;
+public:
+    //BvhBuilder(cuda::TriangleObjectDesc const &oTriangleObjDesc);
+
+    std::vector<BvhNode> GetBvh()
+    { }
+protected:
+private:
+
+
+    //std::shared_ptr<BvhTmpNode> m_pRoot;
 };
 
-} // namespace cuda
+} // namespace bvh
 } // namespace rtrt
 
-#endif // ! RTRT_SCENE_TRIANGLE_CUH
+#endif // ! RTRT_SCENE_ACCEL_BVHCONSTRUCTOR_H
 

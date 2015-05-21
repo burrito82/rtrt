@@ -1,14 +1,12 @@
-#ifndef RTRT_SCENE_TRIANGLE_CUH
-#define RTRT_SCENE_TRIANGLE_CUH
+#ifndef RTRT_SCENE_ACCEL_BVHMANAGER_H
+#define RTRT_SCENE_ACCEL_BVHMANAGER_H
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "accel/BvhNode.h"
-#include "../math/Normal.h"
-#include "../math/Point.h"
-
-#include <thrust/tuple.h>
+#include "BvhNode.h"
+#include "../Triangle.cuh"
+#include "../../cuda/VectorMemory.h"
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -18,7 +16,8 @@
 /*============================================================================*/
 namespace rtrt
 {
-namespace cuda
+class Scene;
+namespace bvh
 {
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
@@ -28,18 +27,31 @@ namespace cuda
 /* CLASS DEFINITIONS                                                          */
 /*============================================================================*/
 
-using TrianglePoints = thrust::tuple<Point, Point, Point>;
-using TriangleNormals = thrust::tuple<Normal, Normal, Normal>;
-
-struct TriangleObjectDesc
+/**
+ * @param
+ * @return
+ * @see
+ * @todo
+ * @bug
+ * @deprecated
+ */
+class BvhManager
 {
-    size_t m_iStartIndex;
-    size_t m_iNumberOfTriangles;
-    bvh::BvhNode *m_pBvh;
+public:
+    explicit BvhManager::BvhManager(Scene *pScene);
+
+    void AddBvh(cuda::TriangleObjectDesc &oTriangleObjDesc);
+    void Synchronize();
+
+protected:
+private:
+    VectorMemory<BvhNode> m_vecBvh;
+
+    Scene *m_pScene;
 };
 
-} // namespace cuda
+} // namespace bvh
 } // namespace rtrt
 
-#endif // ! RTRT_SCENE_TRIANGLE_CUH
+#endif // ! RTRT_SCENE_ACCEL_BVHMANAGER_H
 

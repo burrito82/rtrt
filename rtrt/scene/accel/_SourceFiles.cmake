@@ -5,6 +5,12 @@ set( RelativeSourceGroup "source\\scene\\accel" )
 set( SubDirs )
 
 set( DirFiles
+    Bvh.cuh
+    BvhBuilder.cpp
+    BvhBuilder.h
+    BvhManager.cpp
+    BvhManager.h
+    BvhNode.h
 
     _SourceFiles.cmake
 )

@@ -38,12 +38,11 @@ struct RTRTAPI BoundingBox
     {
 
     }
-    BoundingBox(Point const &lhs, Point const &rhs):
-        min{min_},
-        max{max_}
+    BoundingBox(BoundingBox const &lhs, BoundingBox const &rhs):
+        min{lhs.min},
+        max{lhs.max}
     {
-        Grow(*this, lhs);
-        Grow(*this, rhs);
+        this->Grow(rhs);
     }
 
     bool Contains(Point const &p) const
@@ -58,10 +57,15 @@ struct RTRTAPI BoundingBox
         return min + 0.5f * (max - min);
     }
 
-    float SurfaceArea() const
+    float HalfSurfaceArea() const
     {
         Vector d = max - min;
-        return 2.0f * (d.x * d.y + d.x * d.z + d.y * d.z);
+        return d.x * d.y + d.x * d.z + d.y * d.z;
+    }
+
+    float SurfaceArea() const
+    {
+        return 2.0f * HalfSurfaceArea();
     }
 
     float Volume() const
@@ -102,24 +106,24 @@ struct RTRTAPI BoundingBox
     }
 };
 
-BoundingBox &Grow(BoundingBox &lhs, BoundingBox const &rhs)
+inline BoundingBox &Grow(BoundingBox &lhs, BoundingBox const &rhs)
 {
     return lhs.Grow(rhs);
 }
 
-BoundingBox const Union(BoundingBox lhs, BoundingBox const &rhs)
+inline BoundingBox const Union(BoundingBox lhs, BoundingBox const &rhs)
 {
     return Grow(lhs, rhs);
 }
 
-bool Overlap(BoundingBox const &lhs, BoundingBox const &rhs)
+inline bool Overlap(BoundingBox const &lhs, BoundingBox const &rhs)
 {
     return (lhs.max.x >= rhs.min.x) && (rhs.max.x >= lhs.min.x)
         && (lhs.max.y >= rhs.min.y) && (rhs.max.y >= lhs.min.y)
         && (lhs.max.z >= rhs.min.z) && (rhs.max.z >= lhs.min.z);
 }
 
-bool Contains(BoundingBox const &bb, Point const &p)
+inline bool Contains(BoundingBox const &bb, Point const &p)
 {
     return bb.Contains(p);
 }

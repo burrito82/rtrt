@@ -5,6 +5,7 @@
 /* INCLUDES                                                                   */
 /*============================================================================*/
 #include "TriangleObject.h"
+#include "accel/BvhManager.h"
 #include "../cuda/VectorMemory.h"
 #include "../LibraryConfig.h"
 
@@ -27,6 +28,7 @@ class SceneCuda;
 
 class RTRTAPI Scene
 {
+    friend class bvh::BvhManager;
 public:
     Scene();
 
@@ -35,12 +37,26 @@ public:
 
     void Test();
 
+    VectorMemory<cuda::TriangleObjectDesc> const &GetTriangleObjects() const
+    {
+        return m_vecTriangleObjects;
+    }
+    VectorMemory<Point> const &GetPoints() const
+    {
+        return m_vecPoints;
+    }
+    VectorMemory<Normal> const &GetNormals() const
+    {
+        return m_vecNormals;
+    }
+
 private:
     std::shared_ptr<SceneCuda> m_pSceneCuda;
 
     VectorMemory<cuda::TriangleObjectDesc> m_vecTriangleObjects;
     VectorMemory<Point> m_vecPoints;
     VectorMemory<Normal> m_vecNormals;
+    bvh::BvhManager m_oBvhManager;
 };
 
 } // namespace rtrt

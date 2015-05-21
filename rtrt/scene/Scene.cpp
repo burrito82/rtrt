@@ -70,7 +70,8 @@ Scene::Scene():
     m_pSceneCuda{std::make_shared<SceneCuda>()},
     m_vecTriangleObjects{},
     m_vecPoints{},
-    m_vecNormals{}
+    m_vecNormals{},
+    m_oBvhManager{this}
 {
 
 }
@@ -82,12 +83,13 @@ void Scene::AddObject(TriangleObject const &rTriangleObject)
 {
     auto iPointsNow = m_vecPoints.size();
     auto iNormalsNow = m_vecNormals.size();
-    cuda::TriangleObjectDesc oTriangleDesc{};
-    oTriangleDesc.m_iStartIndex = iPointsNow / 3u;
-    oTriangleDesc.m_iNumberOfTriangles = rTriangleObject.m_vecPoints.size() / 3u;
+    cuda::TriangleObjectDesc oTriangleObjDesc{};
+    oTriangleObjDesc.m_iStartIndex = iPointsNow / 3u;
+    oTriangleObjDesc.m_iNumberOfTriangles = rTriangleObject.m_vecPoints.size() / 3u;
     std::copy(std::begin(rTriangleObject.m_vecPoints), std::end(rTriangleObject.m_vecPoints), std::back_inserter(m_vecPoints));
     std::copy(std::begin(rTriangleObject.m_vecNormals), std::end(rTriangleObject.m_vecNormals), std::back_inserter(m_vecNormals));
-    m_vecTriangleObjects.push_back(oTriangleDesc);
+    m_oBvhManager.AddBvh(oTriangleObjDesc);
+    m_vecTriangleObjects.push_back(oTriangleObjDesc);
 }
 
 void Scene::Synchronize()
