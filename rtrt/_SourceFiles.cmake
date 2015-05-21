@@ -1,11 +1,11 @@
 # $Id:$
 
-set( RelativeDir "./src/scene/accel" )
-set( RelativeSourceGroup "source\\scene\\accel" )
-set( SubDirs )
+set( RelativeDir "./rtrt" )
+set( RelativeSourceGroup "source" )
+set( SubDirs cuda math scene )
 
 set( DirFiles
-
+    LibraryConfig.h
     _SourceFiles.cmake
 )
 set( DirFiles_SourceGroup "${RelativeSourceGroup}" )

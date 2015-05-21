@@ -1,16 +1,23 @@
 # $Id:$
 
-set( RelativeDir "./src/scene" )
+set( RelativeDir "./rtrt/scene" )
 set( RelativeSourceGroup "source\\scene" )
 set( SubDirs accel)
 
 set( DirFiles
     BoundingBox.h
     HitPoint.h
-    Intersection.cu
     Intersection.cuh
     Intersection.h
-    Ray.h
+    LoaderObj.cpp
+    LoaderObj.h
+    Ray.cuh
+    RayTriangleIntersection.cuh
+    Scene.cpp
+    Scene.h
+    Scene.cu
+    Scene.cuh
+    Triangle.cuh
     TriangleObject.cpp
     TriangleObject.h
 

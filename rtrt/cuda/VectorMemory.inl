@@ -4,6 +4,8 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
+#include <cuda_runtime.h>
+
 #include <algorithm>
 /*============================================================================*/
 /* MACROS AND DEFINES, CONSTANTS AND STATICS                                  */
@@ -71,7 +73,7 @@ VectorMemory<T, WRITEDIRECTION>::VectorMemory(VectorMemory<T, WRITEDIRECTION> co
 {
     reserve(m_vecCpu.capacity());
     resize(m_vecCpu.size());
-    cuda::Checked(m_pCuda, rhs.m_pCuda, sizeof(T) * m_iCudaSize, cudaMemcpyDeviceToDevice);
+    cuda::Checked(cudaMemcpy(m_pCuda.get(), rhs.m_pCuda.get(), sizeof(T) * m_iCudaSize, cudaMemcpyDeviceToDevice));
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
@@ -124,6 +126,7 @@ VectorMemory<T, WRITEDIRECTION> &VectorMemory<T, WRITEDIRECTION>::operator=(Vect
     reserve(rhs.capacity());
     resize(rhs.size());
     cuda::Checked(cudaMemcpy(m_pCuda.get(), rhs.m_pCuda.get(), sizeof(T) * rhs.m_iCudaSize, cudaMemcpyDeviceToDevice));
+    return *this;
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
@@ -131,6 +134,7 @@ VectorMemory<T, WRITEDIRECTION> &VectorMemory<T, WRITEDIRECTION>::operator=(Vect
 {
     swap(rhs);
     rhs.m_iCudaSize = 0;
+    return *this;
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
@@ -140,6 +144,7 @@ VectorMemory<T, WRITEDIRECTION> &VectorMemory<T, WRITEDIRECTION>::operator=(Cont
     reserve(rhs.capacity());
     resize(rhs.size());
     Cpu2Gpu();
+    return *this;
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
@@ -149,6 +154,7 @@ VectorMemory<T, WRITEDIRECTION> &VectorMemory<T, WRITEDIRECTION>::operator=(Cont
     reserve(rhs.capacity());
     resize(rhs.size());
     Cpu2Gpu();
+    return *this;
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
@@ -156,9 +162,10 @@ VectorMemory<T, WRITEDIRECTION> &VectorMemory<T, WRITEDIRECTION>::operator=(std:
 {
     resize(ilist.size());
     std::copy(std::begin(ilist), std::end(ilist), std::begin(m_vecCpu));
-    reserve(rhs.capacity());
-    resize(rhs.size());
+    reserve(capacity());
+    resize(size());
     Cpu2Gpu();
+    return *this;
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
@@ -171,6 +178,12 @@ template<typename T, WriteDirection WRITEDIRECTION>
 typename VectorMemory<T, WRITEDIRECTION>::const_reference VectorMemory<T, WRITEDIRECTION>::operator[](size_type index) const
 {
     return m_vecCpu[index];
+}
+
+template<typename T, WriteDirection WRITEDIRECTION>
+T *VectorMemory<T, WRITEDIRECTION>::data()
+{
+    return m_vecCpu.data();
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
@@ -217,7 +230,9 @@ void VectorMemory<T, WRITEDIRECTION>::reserve(size_type new_cap)
     new_cap = m_vecCpu.capacity();
     if (m_iCudaCapacity < new_cap)
     {
-        decltype(m_pCuda) pBigger{new T[new_cap]};
+        T *pCuda = 0;
+        cuda::Checked(cudaMalloc(&pCuda, new_cap * sizeof(T)), "cudaMalloc failed!");
+        decltype(m_pCuda) pBigger{pCuda};
         if (m_pCuda != nullptr && m_iCudaSize > 0)
         {
             cuda::Checked(cudaMemcpy(pBigger.get(), m_pCuda.get(), sizeof(T) * m_iCudaSize, cudaMemcpyDeviceToDevice));
@@ -261,7 +276,7 @@ void VectorMemory<T, WRITEDIRECTION>::push_back(T const &value)
 template<typename T, WriteDirection WRITEDIRECTION>
 void VectorMemory<T, WRITEDIRECTION>::push_back(T &&value)
 {
-    m_vecCpu.push_back(std::forward(value));
+    m_vecCpu.push_back(std::forward<T>(value));
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
@@ -287,6 +302,12 @@ void VectorMemory<T, WRITEDIRECTION>::swap(VectorMemory<T, WRITEDIRECTION> &rhs)
     swap(m_iCudaSize, rhs.m_iCudaSize);
     swap(m_iCudaCapacity, rhs.m_iCudaCapacity);
     swap(m_pCuda, rhs.m_pCuda);
+}
+
+template<typename T, WriteDirection WRITEDIRECTION>
+typename VectorMemory<T, WRITEDIRECTION>::pointer VectorMemory<T, WRITEDIRECTION>::CudaPointer()
+{
+    return m_pCuda.get();
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>

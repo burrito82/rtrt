@@ -1,83 +1,25 @@
-#ifndef RTRT_MATH_NORMAL_H
-#define RTRT_MATH_NORMAL_H
+#include "Normal.h"
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "Vector.h"
-#include "../LibraryConfig.h"
-
-#include <vector_types.h>
-#include <cmath>
-/*============================================================================*/
-/* DEFINES                                                                    */
-/*============================================================================*/
 
 /*============================================================================*/
-/* FORWARD DECLARATIONS                                                       */
+/* MACROS AND DEFINES, CONSTANTS AND STATICS                                  */
 /*============================================================================*/
 namespace rtrt
 {
 /*============================================================================*/
-/* STRUCT DEFINITIONS                                                         */
+/* LOCAL VARS AND FUNCS                                                       */
 /*============================================================================*/
 
-struct RTRTAPI Normal : public float4
-{
-    Normal()
-    {
-        x = y = z = w = -1.0f;
-    }
-    Normal(float x_, float y_, float z_)
-    {
-        x = x_;
-        y = y_;
-        z = z_;
-        w = 0.0f;
-        Normalize();
-    }
-    explicit Normal(Vector const &v)
-    {
-        x = v.x;
-        y = v.y;
-        z = v.x;
-        w = 0.0f;
-        Normalize();
-    }
+/*============================================================================*/
+/* CONSTRUCTORS / DESTRUCTOR                                                  */
+/*============================================================================*/
 
-    // index access
-    float &operator[](size_t index)
-    {
-        // return (&x)[index];
-        switch (index)
-        {
-        case 0: return x;
-        case 1: return y;
-        case 2: return z;
-        case 3: return w;
-        default:
-            return x;
-        }
-    }
-
-    float operator[](size_t index) const
-    {
-        return const_cast<Normal *>(this)->operator[](index);
-    }
-
-    explicit operator Vector() const
-    {
-        return Vector{x, y, z};
-    }
-
-    void Normalize()
-    {
-        float fLength = std::sqrt(x * x + y * y + z * z);
-        x /= fLength;
-        y /= fLength;
-        z /= fLength;
-    }
-};
+/*============================================================================*/
+/* IMPLEMENTATION                                                             */
+/*============================================================================*/
 
 Normal const operator-(Normal const &n)
 {
@@ -194,4 +136,3 @@ Normal FaceForward(Normal const &n, Vector const &v)
 
 } // namespace rtrt
 
-#endif // ! RTRT_MATH_NORMAL_H

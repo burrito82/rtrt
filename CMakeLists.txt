@@ -53,7 +53,7 @@ if( CUDA_KERNEL_VERBOSE )
 endif( CUDA_KERNEL_VERBOSE )
 
 
-include( "./src/_SourceFiles.cmake" )
+include( "./rtrt/_SourceFiles.cmake" )
 CUDA_ADD_LIBRARY( rtrt ${ProjectSources})
 #END CUDA
 

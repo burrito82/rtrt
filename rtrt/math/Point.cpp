@@ -1,55 +1,25 @@
-#ifndef RTRT_MATH_POINT_H
-#define RTRT_MATH_POINT_H
+#include "Point.h"
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "Vector.h"
-
-#include <vector_types.h>
-/*============================================================================*/
-/* DEFINES                                                                    */
-/*============================================================================*/
 
 /*============================================================================*/
-/* FORWARD DECLARATIONS                                                       */
+/* MACROS AND DEFINES, CONSTANTS AND STATICS                                  */
 /*============================================================================*/
 namespace rtrt
 {
 /*============================================================================*/
-/* STRUCT DEFINITIONS                                                         */
+/* LOCAL VARS AND FUNCS                                                       */
 /*============================================================================*/
 
-struct RTRTAPI Point : public float4
-{
-    Point(float x_ = 0.0f, float y_ = 0.0f, float z_ = 0.0f)
-    {
-        x = x_;
-        y = y_;
-        z = z_;
-        w = 1.0f;
-    }
+/*============================================================================*/
+/* CONSTRUCTORS / DESTRUCTOR                                                  */
+/*============================================================================*/
 
-    // index access
-    float &operator[](size_t index)
-    {
-        // return (&x)[index];
-        switch (index)
-        {
-        case 0: return x;
-        case 1: return y;
-        case 2: return z;
-        case 3: return w;
-        default:
-            return x;
-        }
-    }
-
-    float operator[](size_t index) const
-    {
-        return const_cast<Point *>(this)->operator[](index);
-    }
-};
+/*============================================================================*/
+/* IMPLEMENTATION                                                             */
+/*============================================================================*/
 
 // add offset
 Point const operator+(Point const &p, Vector const &v)
@@ -132,4 +102,3 @@ float Distance(Point const &lhs, Point const &rhs)
 
 } // namespace rtrt
 
-#endif // ! RTRT_MATH_POINT_H

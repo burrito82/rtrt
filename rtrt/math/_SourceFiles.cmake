@@ -1,13 +1,19 @@
 # $Id:$
 
-set( RelativeDir "./src/cuda" )
-set( RelativeSourceGroup "source\\cuda" )
+set( RelativeDir "./rtrt/math" )
+set( RelativeSourceGroup "source\\math" )
 set( SubDirs )
 
 set( DirFiles
-    Assert.h
-    VectorMemory.h
-    VectorMemory.inl
+    Normal.cpp
+    Normal.h
+    Point.cpp
+    Point.h
+    Matrix.cpp
+    Matrix.h
+    Quaternion.h
+    Vector.cpp
+    Vector.h
 
     _SourceFiles.cmake
 )

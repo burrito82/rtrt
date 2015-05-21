@@ -1,14 +1,12 @@
-#ifndef RTRT_MATH_TRANSFORMATION_H
-#define RTRT_MATH_TRANSFORMATION_H
+#ifndef RTRT_RAY_H
+#define RTRT_RAY_H
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "Vector.h"
+#include "../math/Normal.h"
+#include "../math/Point.h"
 #include "../LibraryConfig.h"
-
-#include <array>
-#include <cmath>
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -22,34 +20,20 @@ namespace rtrt
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
 
-struct RTRTAPI Matrix
+struct RTRTAPI Ray
 {
-    Matrix():
-        m_aRows{
-            Vector{1.0f, 0.0f, 0.0f, 0.0f}, 
-            Vector{0.0f, 1.0f, 0.0f, 0.0f}, 
-            Vector{0.0f, 0.0f, 1.0f, 0.0f}, 
-            Vector{0.0f, 0.0f, 0.0f, 1.0f}
-        }
+    Ray() = default;
+    Ray(Point const &o_, Normal const &d_):
+        origin{o_},
+        direction{d_}
     {
 
     }
 
-    // index access
-    Vector &operator[](size_t index)
-    {
-        return m_aRows[index];
-    }
-
-    Vector operator[](size_t index) const
-    {
-        return const_cast<Matrix *>(this)->operator[](index);
-    }
-
-private:
-    std::array<Vector, 4> m_aRows;
+    Point origin;
+    Normal direction;
 };
 
 } // namespace rtrt
 
-#endif // ! RTRT_MATH_TRANSFORMATION_H
+#endif // ! RTRT_RAY_H

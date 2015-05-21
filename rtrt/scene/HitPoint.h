@@ -1,13 +1,10 @@
-#ifndef RTRT_SCENE_TRIANGLEOBJECT_H
-#define RTRT_SCENE_TRIANGLEOBJECT_H
-
+#ifndef RTRT_HITPOINT_H
+#define RTRT_HITPOINT_H
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "../cuda/VectorMemory.h"
-#include "../math/Normal.h"
-#include "../math/Point.h"
-#include "../math/Vector.h"
+#include <limits>
+#include <cfloat>
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -15,38 +12,40 @@
 /*============================================================================*/
 /* FORWARD DECLARATIONS                                                       */
 /*============================================================================*/
-
 namespace rtrt
+{
+namespace cuda
 {
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
-
-/*============================================================================*/
-/* CLASS DEFINITIONS                                                          */
-/*============================================================================*/
-
-/**
- * @param
- * @return
- * @see
- * @todo
- * @bug
- * @deprecated
- */
-class TriangleObject
+struct HitPoint
 {
-public:
-    TriangleObject()
+    __device__ __host__
+        HitPoint():
+        //m_fDistance{std::numeric_limits<float>::infinity()}
+        m_fDistance{inf()}
     {
+
     }
-protected:
-private:
-    VectorMemory<Vector> m_vecVertices;
-    VectorMemory<Normal> m_vecNormals;
+
+    __device__ __host__
+    operator bool() const
+    {
+        return (m_fDistance > 0.0f && m_fDistance < inf());
+    }
+
+    __device__ __host__
+    static float inf()
+    {
+        return 1.0e+30f;
+    }
+
+    float m_fDistance;
 };
 
+} // namespace cuda
 } // namespace rtrt
 
-#endif // ! RTRT_SCENE_TRIANGLEOBJECT_H
+#endif // ! RTRT_HITPOINT_H
 

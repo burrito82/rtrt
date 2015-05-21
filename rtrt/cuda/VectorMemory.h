@@ -61,6 +61,7 @@ public:
     reference operator[](size_type index);
     const_reference operator[](size_type index) const;
 
+    T *data();
     iterator begin();
     const_iterator begin() const;
     iterator end();
@@ -79,6 +80,7 @@ public:
     void resize(size_type count);
     void swap(VectorMemory<T, WRITEDIRECTION> &rhs);
 
+    pointer CudaPointer();
     void Synchronize();
     void Cpu2Gpu();
     void Gpu2Cpu();

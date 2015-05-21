@@ -65,6 +65,10 @@ static void Checked(cudaError_t iError, char const *pError = nullptr)
         throw CudaException(iError, strErrMsg.c_str());
     }
 }
+static void KernelCheck()
+{
+    Checked(cudaDeviceSynchronize(), "rtrt::cuda::KernelCheck");
+}
 
 } // namespace cuda
 

@@ -1,102 +1,25 @@
-#ifndef RTRT_MATH_VECTOR_H
-#define RTRT_MATH_VECTOR_H
+#include "Vector.h"
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "../LibraryConfig.h"
-
-#include <vector_types.h>
-#include <cmath>
-/*============================================================================*/
-/* DEFINES                                                                    */
-/*============================================================================*/
 
 /*============================================================================*/
-/* FORWARD DECLARATIONS                                                       */
+/* MACROS AND DEFINES, CONSTANTS AND STATICS                                  */
 /*============================================================================*/
 namespace rtrt
 {
 /*============================================================================*/
-/* STRUCT DEFINITIONS                                                         */
+/* LOCAL VARS AND FUNCS                                                       */
 /*============================================================================*/
 
-struct RTRTAPI Vector : public float4
-{
-    Vector(float x_ = 0.0f, float y_ = 0.0f, float z_ = 0.0f)
-    {
-        x = x_;
-        y = y_;
-        z = z_;
-        w = 0.0f;
-    }
+/*============================================================================*/
+/* CONSTRUCTORS / DESTRUCTOR                                                  */
+/*============================================================================*/
 
-    // index access
-    float &operator[](size_t index)
-    {
-        // return (&x)[index];
-        switch (index)
-        {
-        case 0: return x;
-        case 1: return y;
-        case 2: return z;
-        case 3: return w;
-        default:
-            return x;
-        }
-    }
-
-    float operator[](size_t index) const
-    {
-        return const_cast<Vector *>(this)->operator[](index);
-    }
-
-    float Dot(Vector const &rhs) const
-    {
-        return x * rhs.x
-            + y * rhs.y
-            + z * rhs.z;
-    }
-
-    float AbsDot(Vector const &rhs) const
-    {
-        return std::abs(this->Dot(rhs));
-    }
-
-    Vector const Cross(Vector const &rhs) const
-    {
-        return Vector
-        {
-            y * rhs.z - z * rhs.y,
-            z * rhs.x - x * rhs.z,
-            x * rhs.y - y * rhs.x
-        };
-    }
-
-    float LengthSquared() const
-    {
-        return this->Dot(*this);
-    }
-
-    float Length() const
-    {
-        return std::sqrt(this->LengthSquared());
-    }
-
-    Vector &Normalize()
-    {
-        float const fLength = Length();
-        x /= fLength;
-        y /= fLength;
-        z /= fLength;
-        return *this;
-    }
-
-    Vector const Normalized() const
-    {
-        return Vector{*this}.Normalize();
-    }
-};
+/*============================================================================*/
+/* IMPLEMENTATION                                                             */
+/*============================================================================*/
 
 Vector const operator-(Vector const &n)
 {
@@ -222,6 +145,7 @@ Vector const Normalized(Vector v)
 {
     return Normalize(v);
 }
+
 /*============================================================================*/
 /* OTHER HELPER FUNCTIONS                                                     */
 /*============================================================================*/
@@ -243,4 +167,3 @@ void CoordinateSystem(Vector const &v0, Vector &v1, Vector &v2)
 
 } // namespace rtrt
 
-#endif // ! RTRT_MATH_VECTOR_H
