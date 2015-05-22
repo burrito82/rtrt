@@ -35,7 +35,7 @@ struct TriangleObjectDesc
 {
     size_t m_iStartIndex;
     size_t m_iNumberOfTriangles;
-    bvh::BvhNode *m_pBvh;
+    size_t m_iBvhStart;
 };
 
 } // namespace cuda

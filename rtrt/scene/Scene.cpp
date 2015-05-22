@@ -71,6 +71,7 @@ Scene::Scene():
     m_vecTriangleObjects{},
     m_vecPoints{},
     m_vecNormals{},
+    m_vecBoundingBoxes{},
     m_oBvhManager{this}
 {
 
@@ -88,6 +89,18 @@ void Scene::AddObject(TriangleObject const &rTriangleObject)
     oTriangleObjDesc.m_iNumberOfTriangles = rTriangleObject.m_vecPoints.size() / 3u;
     std::copy(std::begin(rTriangleObject.m_vecPoints), std::end(rTriangleObject.m_vecPoints), std::back_inserter(m_vecPoints));
     std::copy(std::begin(rTriangleObject.m_vecNormals), std::end(rTriangleObject.m_vecNormals), std::back_inserter(m_vecNormals));
+
+    size_t const iBegin = oTriangleObjDesc.m_iStartIndex;
+    size_t const iEnd = iBegin + oTriangleObjDesc.m_iNumberOfTriangles;
+    for (size_t iTriangle = iBegin; iTriangle != iEnd; ++iTriangle)
+    {
+        cuda::TrianglePoints oTriangle = GetTrianglePoints(iTriangle);
+        BoundingBox oBoundingBox{thrust::get<0>(oTriangle), thrust::get<0>(oTriangle)};
+        oBoundingBox.Grow(BoundingBox{thrust::get<1>(oTriangle), thrust::get<1>(oTriangle)});
+        oBoundingBox.Grow(BoundingBox{thrust::get<2>(oTriangle), thrust::get<2>(oTriangle)});
+        m_vecBoundingBoxes.push_back(oBoundingBox);
+    }
+
     m_oBvhManager.AddBvh(oTriangleObjDesc);
     m_vecTriangleObjects.push_back(oTriangleObjDesc);
 }
@@ -97,10 +110,12 @@ void Scene::Synchronize()
     m_vecPoints.Synchronize();
     m_vecNormals.Synchronize();
     m_vecTriangleObjects.Synchronize();
-    (*m_pSceneCuda)->m_pPoints = m_vecPoints.CudaPointer();
-    (*m_pSceneCuda)->m_pNormals = m_vecNormals.CudaPointer();
-    (*m_pSceneCuda)->m_pTriangleObjects = m_vecTriangleObjects.CudaPointer();
-    (*m_pSceneCuda)->m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
+    m_oBvhManager.Synchronize();
+    m_pSceneCuda->Get().m_pPoints = m_vecPoints.CudaPointer();
+    m_pSceneCuda->Get().m_pNormals = m_vecNormals.CudaPointer();
+    m_pSceneCuda->Get().m_pTriangleObjects = m_vecTriangleObjects.CudaPointer();
+    m_pSceneCuda->Get().m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
+    m_pSceneCuda->Get().m_pBvhs = m_oBvhManager.CudaPointer();
     m_pSceneCuda->Synchronize();
 }
 

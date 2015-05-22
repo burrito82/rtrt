@@ -4,6 +4,8 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
+#include "BoundingBox.h"
+#include "Triangle.cuh"
 #include "TriangleObject.h"
 #include "accel/BvhManager.h"
 #include "../cuda/VectorMemory.h"
@@ -37,6 +39,26 @@ public:
 
     void Test();
 
+    cuda::TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
+    {
+        return
+        {
+            m_vecPoints[3 * iTriangleIndex],
+            m_vecPoints[3 * iTriangleIndex + 1],
+            m_vecPoints[3 * iTriangleIndex + 2]
+        };
+    }
+
+    cuda::TriangleNormals GetTriangleNormals(size_t iTriangleIndex) const
+    {
+        return
+        {
+            m_vecNormals[3 * iTriangleIndex],
+            m_vecNormals[3 * iTriangleIndex + 1],
+            m_vecNormals[3 * iTriangleIndex + 2]
+        };
+    }
+
     VectorMemory<cuda::TriangleObjectDesc> const &GetTriangleObjects() const
     {
         return m_vecTriangleObjects;
@@ -49,6 +71,10 @@ public:
     {
         return m_vecNormals;
     }
+    std::vector<BoundingBox> const &GetBoundingBoxes() const
+    {
+        return m_vecBoundingBoxes;
+    }
 
 private:
     std::shared_ptr<SceneCuda> m_pSceneCuda;
@@ -56,6 +82,7 @@ private:
     VectorMemory<cuda::TriangleObjectDesc> m_vecTriangleObjects;
     VectorMemory<Point> m_vecPoints;
     VectorMemory<Normal> m_vecNormals;
+    std::vector<BoundingBox> m_vecBoundingBoxes;
     bvh::BvhManager m_oBvhManager;
 };
 

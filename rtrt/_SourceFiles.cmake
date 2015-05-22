@@ -5,6 +5,7 @@ set( RelativeSourceGroup "source" )
 set( SubDirs cuda math scene )
 
 set( DirFiles
+    Assert.h
     LibraryConfig.h
     _SourceFiles.cmake
 )

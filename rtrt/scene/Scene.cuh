@@ -8,6 +8,7 @@
 #include "Ray.cuh"
 #include "RayTriangleIntersection.cuh"
 #include "Triangle.cuh"
+#include "accel/BvhNode.h"
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -33,16 +34,10 @@ struct Scene
 
         for (size_t iTriangleObjectIndex = 0; iTriangleObjectIndex < m_iNumberOfTriangleObjects; ++iTriangleObjectIndex)
         {
-            size_t const iTriangleBegin = m_pTriangleObjects[iTriangleObjectIndex].m_iStartIndex;
-            size_t const iTriangleEnd = m_pTriangleObjects[iTriangleObjectIndex].m_iNumberOfTriangles + iTriangleBegin;
-
-            for (size_t iTriangleIndex = iTriangleBegin; iTriangleIndex < iTriangleEnd; ++iTriangleIndex)
+            HitPoint oTmpHitPoint = IntersectLinear(rRay, iTriangleObjectIndex);
+            if (oTmpHitPoint && oTmpHitPoint.m_fDistance < oHitPoint.m_fDistance)
             {
-                float fDistance = IntersectTriangleWoop(rRay, GetTrianglePoints(iTriangleIndex));
-                if (fDistance > 0.0f && fDistance < oHitPoint.m_fDistance)
-                {
-                    oHitPoint.m_fDistance = fDistance;
-                }
+                oHitPoint = oTmpHitPoint;
             }
         }
 
@@ -75,6 +70,27 @@ struct Scene
     TriangleObjectDesc *m_pTriangleObjects;
     Point *m_pPoints;
     Normal *m_pNormals;
+    bvh::BvhNode *m_pBvhs;
+
+private:
+    __device__ __host__ __inline__
+    HitPoint IntersectLinear(Ray const &rRay, size_t iTriangleObjectIndex) const
+    {
+        HitPoint oHitPoint{};
+        size_t const iTriangleBegin = m_pTriangleObjects[iTriangleObjectIndex].m_iStartIndex;
+        size_t const iTriangleEnd = m_pTriangleObjects[iTriangleObjectIndex].m_iNumberOfTriangles + iTriangleBegin;
+
+        for (size_t iTriangleIndex = iTriangleBegin; iTriangleIndex < iTriangleEnd; ++iTriangleIndex)
+        {
+            float fDistance = IntersectTriangleWoop(rRay, GetTrianglePoints(iTriangleIndex));
+            if (fDistance > 0.0f && fDistance < oHitPoint.m_fDistance)
+            {
+                oHitPoint.m_fDistance = fDistance;
+            }
+        }
+
+        return oHitPoint;
+    }
 };
 
 namespace kernel

@@ -1,13 +1,11 @@
-#ifndef RTRT_SCENE_ACCEL_BVHMANAGER_H
-#define RTRT_SCENE_ACCEL_BVHMANAGER_H
+#ifndef RTRT_ASSERT_H
+#define RTRT_ASSERT_H
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "BvhNode.h"
-#include "../BoundingBox.h"
-#include "../Triangle.cuh"
-#include "../../cuda/VectorMemory.h"
+#include <stdexcept>
+#include <string>
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -17,44 +15,43 @@
 /*============================================================================*/
 namespace rtrt
 {
-class Scene;
-namespace bvh
-{
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
 
-/*============================================================================*/
-/* CLASS DEFINITIONS                                                          */
-/*============================================================================*/
-
-/**
- * @param
- * @return
- * @see
- * @todo
- * @bug
- * @deprecated
- */
-class BvhManager
+class RtrtException : public std::runtime_error
 {
 public:
-    explicit BvhManager::BvhManager(Scene *pScene);
+    explicit RtrtException(char const *pError):
+        std::runtime_error{pError}
+    {
+    }
 
-    void AddBvh(cuda::TriangleObjectDesc &oTriangleObjDesc);
-    void Synchronize();
-
-    BvhNode *CudaPointer();
-
-protected:
+    explicit RtrtException(std::string const &strError):
+        std::runtime_error(strError)
+    {
+    }
 private:
-    VectorMemory<BvhNode> m_vecBvh;
-
-    Scene *m_pScene;
 };
 
-} // namespace bvh
+static void Assert(bool bAssert, char const *pError = nullptr)
+{
+    if (!bAssert)
+    {
+        throw RtrtException(pError);
+    }
+}
+
+static void Assert(bool bAssert, std::string const &strError)
+{
+    if (!bAssert)
+    {
+        throw RtrtException(strError);
+    }
+}
+
 } // namespace rtrt
 
-#endif // ! RTRT_SCENE_ACCEL_BVHMANAGER_H
+
+#endif // ! RTRT_ASSERT_H
 

@@ -37,10 +37,6 @@ namespace rtrt
 class TriangleObject
 {
 public:
-    TriangleObject()
-    {
-    }
-
     std::vector<Point> m_vecPoints;
     std::vector<Normal> m_vecNormals;
 protected:

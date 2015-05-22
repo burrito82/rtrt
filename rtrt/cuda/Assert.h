@@ -24,8 +24,8 @@ namespace rtrt
 class CudaException : public std::runtime_error
 {
 public:
-    CudaException(cudaError_t iError):
-        std::runtime_error{"Unspecified error"},
+    explicit CudaException(cudaError_t iError):
+        std::runtime_error{"Unspecified cuda error"},
         m_iError{iError}
     {
     }
