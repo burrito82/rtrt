@@ -5,7 +5,6 @@ set( RelativeSourceGroup "source\\scene\\accel" )
 set( SubDirs )
 
 set( DirFiles
-    Bvh.cuh
     BvhBoundingBox.h
     BvhManager.cpp
     BvhManager.h
