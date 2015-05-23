@@ -12,6 +12,12 @@ include( VistaCommon )
 
 vista_use_package( CUDA 6.0 REQUIRED FIND_DEPENDENCIES)
 
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 #CUDA
 
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE off)
