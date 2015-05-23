@@ -160,8 +160,11 @@ void Scene::Test(int xDim)
     {
         vecHitPoints[i] = oCpuScene.IntersectBvh(vecRays[i]);
     }
-
-    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() << " ms" << std::endl;
+    auto duration = std::chrono::system_clock::now() - startTime;
+    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms ("
+        << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s, "
+        << vecRays.size() << " rays, "
+        << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
 
     // DRAW
     iRay = 0;
@@ -211,7 +214,7 @@ void Scene::Test(int xDim)
     vecHitPoints.resize(vecRays.size());
     cuda::KernelCheck();
     unsigned int iNoRays = static_cast<unsigned int>(vecRays.size());
-    unsigned int iThreadsPerBlock = 1024;
+    unsigned int iThreadsPerBlock = 1024u;
     dim3 blockDim{iThreadsPerBlock};
     dim3 gridDim{(iNoRays - 1) / iThreadsPerBlock + 1};
     using cuda::kernel::Raytrace;
@@ -220,7 +223,11 @@ void Scene::Test(int xDim)
     cuda::KernelCheck();
     vecHitPoints.Synchronize();
     cuda::KernelCheck();
-    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() << " ms" << std::endl;
+    duration = std::chrono::system_clock::now() - startTime;
+    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms ("
+        << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s, "
+        << vecRays.size() << " rays, "
+        << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
 
     // DRAW
     iRay = 0;
