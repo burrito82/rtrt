@@ -135,7 +135,6 @@ void Scene::Test(int xDim)
 
     rtrt::VectorMemory<Ray> vecRays{};
     rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecHitPoints{};
-    //int xDim = 78;
     int yDim = xDim / 2;
     float z = 10;
     bool bDraw = (2 * xDim < 160);
@@ -153,24 +152,17 @@ void Scene::Test(int xDim)
 
     // CPU
     auto startTime = std::chrono::system_clock::now();
-    int iRay = 0;
-    vecHitPoints.resize(vecRays.size());
-    int iRaysEnd = static_cast<int>(vecRays.size());
-#pragma omp parallel for
-    for (int i = 0; i < iRaysEnd; ++i)
-    {
-        vecHitPoints[i] = oCpuScene.IntersectBvh(vecRays[i]);
-    }
+    Intersect(vecRays, vecHitPoints, CPU);
     auto duration = std::chrono::system_clock::now() - startTime;
-    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms ("
-        << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s, "
-        << vecRays.size() << " rays, "
+    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms\t("
+        << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
+        << vecRays.size() << " rays,\t"
         << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
 
     // DRAW
-    iRay = 0;
     if (bDraw)
     {
+        int iRay = 0;
         for (int y = -yDim; y <= yDim; ++y)
         {
             std::cout << '|';
@@ -188,14 +180,14 @@ void Scene::Test(int xDim)
             }
             std::cout << "|\n";
         }
-    }
 
-    std::cout << 'x';
-    for (int x = -xDim; x <= xDim; ++x)
-    {
-        std::cout << '=';
+        std::cout << 'x';
+        for (int x = -xDim; x <= xDim; ++x)
+        {
+            std::cout << '=';
+        }
+        std::cout << "x\n";
     }
-    std::cout << "x\n";
 
     vecRays = rtrt::VectorMemory<Ray>{};
     vecHitPoints = rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU>{};
@@ -212,29 +204,17 @@ void Scene::Test(int xDim)
 
     // GPU
     startTime = std::chrono::system_clock::now();
-    vecHitPoints.resize(vecRays.size());
-    cuda::KernelCheck();
-    unsigned int iNoRays = static_cast<unsigned int>(vecRays.size());
-    unsigned int iThreadsPerBlock = cuda::Devices::GetInstance().Current().maxThreadsDim[0];
-    unsigned int iGridSize = std::min<unsigned int>((iNoRays - 1u) / iThreadsPerBlock + 1u, cuda::Devices::GetInstance().Current().maxGridSize[0]);
-    dim3 blockDim{iThreadsPerBlock};
-    dim3 gridDim{iGridSize};
-    using cuda::kernel::Raytrace;
-    cuda::KernelCheck();
-    Raytrace(blockDim, gridDim, m_pSceneCuda->CudaPointer(), vecRays.CudaPointer(), vecRays.size(), vecHitPoints.CudaPointer());
-    cuda::KernelCheck();
-    vecHitPoints.Synchronize();
-    cuda::KernelCheck();
+    Intersect(vecRays, vecHitPoints, GPU);
     duration = std::chrono::system_clock::now() - startTime;
-    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms ("
-        << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s, "
-        << vecRays.size() << " rays, "
+    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms\t("
+        << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
+        << vecRays.size() << " rays,\t"
         << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
 
     // DRAW
-    iRay = 0;
     if (bDraw)
     {
+        int iRay = 0;
         for (int y = -yDim; y <= yDim; ++y)
         {
             std::cout << '|';
@@ -253,6 +233,48 @@ void Scene::Test(int xDim)
             std::cout << "|\n";
         }
     }
+}
+
+void Scene::Intersect(VectorMemory<Ray> const &rVecRays,
+                      VectorMemory<cuda::HitPoint, GPU_TO_CPU> &rVecHitPoints,
+                      Hardware eHardware)
+{
+    rVecHitPoints.resize(rVecRays.size());
+    if (eHardware == GPU)
+    {
+        cuda::KernelCheck();
+        unsigned int iNoRays = static_cast<unsigned int>(rVecRays.size());
+        unsigned int iThreadsPerBlock = cuda::Devices::GetInstance().Current().maxThreadsDim[0];
+        unsigned int iGridSize = std::min<unsigned int>((iNoRays - 1u) / iThreadsPerBlock + 1u, cuda::Devices::GetInstance().Current().maxGridSize[0]);
+        dim3 i3BlockDim{iThreadsPerBlock};
+        dim3 i3GridDim{iGridSize};
+        cuda::KernelCheck();
+        cuda::kernel::Raytrace(i3BlockDim, i3GridDim, m_pSceneCuda->CudaPointer(), rVecRays.CudaPointer(), rVecRays.size(), rVecHitPoints.CudaPointer());
+        cuda::KernelCheck();
+        rVecHitPoints.Synchronize();
+        cuda::KernelCheck();
+    }
+    else
+    {
+        cuda::Scene oCpuScene{};
+        oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
+        oCpuScene.m_pTriangleObjects = m_vecTriangleObjects.data();
+        oCpuScene.m_pPoints = m_vecPoints.data();
+        oCpuScene.m_pNormals = m_vecNormals.data();
+        oCpuScene.m_pBvhs = m_oBvhManager.data();
+
+        int iRaysEnd = static_cast<int>(rVecRays.size());
+#pragma omp parallel for
+        for (int i = 0; i < iRaysEnd; ++i)
+        {
+            rVecHitPoints[i] = oCpuScene.IntersectBvh(rVecRays[i]);
+        }
+    }
+}
+
+void Scene::Raytrace()
+{
+
 }
 
 } // namespace rtrt

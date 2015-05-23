@@ -30,13 +30,10 @@ ALIGNED_TYPE(struct, BvhBoundingBox : public BoundingBox, 16)
 };
 
 __device__ __host__ __inline__
-bool RayBoxIntersection(Ray const &rRay,
-    BoundingBox const &rBoundingBox,
-    float fMax = 1.0e35f)
+bool RayBoxIntersection(Ray const &rRay, BoundingBox const &rBoundingBox, float &fMin, float &fMax)
 {
     using cuda::min;
     using cuda::max;
-    float fMin = -1.0e35f;
     for (size_t dim = 0; dim < 3; ++dim)
     {
         if (rRay.direction[dim] == 0.0f)
@@ -58,6 +55,13 @@ bool RayBoxIntersection(Ray const &rRay,
     }
 
     return ((fMax >= fMin) && (fMax >= 0.0f));
+}
+
+__device__ __host__ __inline__
+bool RayBoxIntersection(Ray const &rRay, BoundingBox const &rBoundingBox, 
+    float &&fMax = 1.0e35f, float &&fMin = -1.0e35f)
+{
+    return RayBoxIntersection(rRay, rBoundingBox, fMin, fMax);
 }
 
 } // namespace bvh

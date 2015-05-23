@@ -49,14 +49,14 @@ public:
         return m_pRight.get();
     }
 
-    void Construct()
+    void Construct(int iDepth = 0)
     {
         size_t const iNumberOfTriangles = std::distance(m_itBegin, m_itEnd);
-        if (iNumberOfTriangles <= 2u)
+        if (iNumberOfTriangles <= 4u || iDepth > 15)
         {
             return;
         }
-        size_t const iMaxBins = 4u;
+        size_t const iMaxBins = 64u;
         size_t iBins = std::min(iMaxBins, iNumberOfTriangles);
         size_t iBiggestDim = m_oBoundingBox.MaximumExtent();
 
@@ -115,8 +115,8 @@ public:
         m_pLeft = std::make_shared<BvhTmpNode>(m_itAbsoluteBegin, m_itBegin, vecBinIterators[iBestBin + 1], vecLeftBoundingBoxes[iBestBin]);
         m_pRight = std::make_shared<BvhTmpNode>(m_itAbsoluteBegin, vecBinIterators[iBestBin + 1], m_itEnd, vecRightBoundingBoxes[iBestBin]);
         m_bIsLeaf = false;
-        m_pLeft->Construct();
-        m_pRight->Construct();
+        m_pLeft->Construct(iDepth + 1);
+        m_pRight->Construct(iDepth + 1);
     }
 
     std::vector<BvhNode> Serialize() const

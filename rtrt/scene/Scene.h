@@ -22,6 +22,10 @@
 
 namespace rtrt
 {
+namespace cuda
+{
+struct HitPoint;
+}
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
@@ -32,12 +36,23 @@ class RTRTAPI Scene
 {
     friend class bvh::BvhManager;
 public:
+    enum Hardware
+    {
+        CPU,
+        GPU
+    };
+
     Scene();
 
     void AddObject(TriangleObject const &rTriangleObject);
     void Synchronize();
 
+    void Intersect(VectorMemory<Ray> const &rVecRays, 
+                   VectorMemory<cuda::HitPoint, GPU_TO_CPU> &rVecHitPoints,
+                   Hardware eHardware = GPU);
+
     void Test(int xDim = 78);
+    void Raytrace();
 
     cuda::TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
     {

@@ -320,6 +320,12 @@ typename VectorMemory<T, WRITEDIRECTION>::pointer VectorMemory<T, WRITEDIRECTION
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
+typename VectorMemory<T, WRITEDIRECTION>::const_pointer VectorMemory<T, WRITEDIRECTION>::CudaPointer() const
+{
+    return m_pCuda.get();
+}
+
+template<typename T, WriteDirection WRITEDIRECTION>
 void VectorMemory<T, WRITEDIRECTION>::Synchronize()
 {
     reserve(WRITEDIRECTION == CPU_TO_GPU ? m_vecCpu.capacity() : m_iCudaCapacity);

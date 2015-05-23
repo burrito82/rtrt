@@ -122,20 +122,27 @@ private:
         HitPoint oHitPoint{rHitPointBefore};
         bvh::BvhNode const * const pRoot = &m_pBvhs[m_pTriangleObjects[iTriangleObjectIndex].m_iBvhStart];
 
-        size_t aiTraversalStack[64u]{};
-        int iStackIndex = 0;
-        aiTraversalStack[iStackIndex] = 0u;
+        int aiTraversalStack[64];
+        int iStackIndex = 1;
+        aiTraversalStack[0] = -1;
+        int iCurrentNodeIndex = 0;
+        bvh::BvhNode const *pCurrentNode = nullptr;
+        float fMinDist;
+        float fMaxDist;
 
         do
         {
-            size_t const iCurrentNodeIndex = aiTraversalStack[iStackIndex--];
-            bvh::BvhNode const &rCurrentNode = pRoot[iCurrentNodeIndex];
-            if (bvh::RayBoxIntersection(rRay, rCurrentNode.m_oBoundingBox, oHitPoint.m_fDistance))
+            pCurrentNode = &pRoot[iCurrentNodeIndex];
+            fMinDist = -1.0e35f;
+            fMaxDist = oHitPoint.m_fDistance;
+
+            if (bvh::RayBoxIntersection(rRay, pCurrentNode->m_oBoundingBox, fMinDist, fMaxDist))
             {
-                if (rCurrentNode.m_bIsLeaf)
+                if (pCurrentNode->m_bIsLeaf)
                 {
-                    size_t iBegin = m_pTriangleObjects[iTriangleObjectIndex].m_iStartIndex + rCurrentNode.m_iTriangleIndex;
-                    size_t iEnd = iBegin + rCurrentNode.m_iNumberOfTriangles;
+                    size_t iBegin = m_pTriangleObjects[iTriangleObjectIndex].m_iStartIndex + pCurrentNode->m_iTriangleIndex;
+                    size_t iEnd = iBegin + pCurrentNode->m_iNumberOfTriangles;
+
                     for (size_t iTriangleIndex = iBegin; iTriangleIndex < iEnd; ++iTriangleIndex)
                     {
                         float fDistance = IntersectTriangleWoop(rRay, GetTrianglePoints(iTriangleIndex));
@@ -144,15 +151,59 @@ private:
                             oHitPoint.m_fDistance = fDistance;
                         }
                     }
+
+                    iCurrentNodeIndex = aiTraversalStack[iStackIndex--];
                 }
                 else
                 {
-                    aiTraversalStack[++iStackIndex] = 2u * iCurrentNodeIndex + 1u;
-                    aiTraversalStack[++iStackIndex] = 2u * iCurrentNodeIndex + 2u;
+                    int iLeft = 2 * iCurrentNodeIndex + 1;
+                    int iRight = 2 * iCurrentNodeIndex + 2;
+                    bvh::BvhNode const *pLeft = &pRoot[iLeft];
+                    bvh::BvhNode const *pRight = &pRoot[iRight];
+                    float fLeftMin = -1.0e35f, fLeftMax = oHitPoint.m_fDistance;
+                    float fRightMin = -1.0e35f, fRightMax = oHitPoint.m_fDistance;
+                    bool bLeftHit = bvh::RayBoxIntersection(rRay, pLeft->m_oBoundingBox, fLeftMin, fLeftMax);
+                    bool bRightHit = bvh::RayBoxIntersection(rRay, pRight->m_oBoundingBox, fRightMin, fRightMax);
+
+                    if (bLeftHit && bRightHit)
+                    {
+                        if (fLeftMin < fRightMin)
+                        {
+                            iCurrentNodeIndex = iLeft;
+                            aiTraversalStack[++iStackIndex] = iRight;
+                        }
+                        else
+                        {
+                            iCurrentNodeIndex = iRight;
+                            aiTraversalStack[++iStackIndex] = iLeft;
+                        }
+                    }
+                    else
+                    {
+                        if (bLeftHit)
+                        {
+                            iCurrentNodeIndex = iLeft;
+                        }
+                        else
+                        {
+                            if (bRightHit)
+                            {
+                                iCurrentNodeIndex = iRight;
+                            }
+                            else
+                            {
+                                iCurrentNodeIndex = aiTraversalStack[iStackIndex--];
+                            }
+                        }
+                    }
                 }
             }
+            else
+            {
+                iCurrentNodeIndex = aiTraversalStack[iStackIndex--];
+            }
         }
-        while (iStackIndex >= 0);
+        while (iCurrentNodeIndex >= 0);
 
         return oHitPoint;
     }

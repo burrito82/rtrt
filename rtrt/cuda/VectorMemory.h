@@ -83,6 +83,7 @@ public:
     void swap(VectorMemory<T, WRITEDIRECTION> &rhs);
 
     pointer CudaPointer();
+    const_pointer CudaPointer() const;
     void Synchronize();
     void Cpu2Gpu();
     void Gpu2Cpu();
