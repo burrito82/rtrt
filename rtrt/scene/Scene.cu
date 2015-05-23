@@ -37,10 +37,11 @@ namespace impl
 __global__
 void Raytrace(Scene const *pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints)
 {
-    int iLocalId = threadIdx.x + blockIdx.x * blockDim.x;
-    if (iLocalId < iNumberOfRays)
+    size_t iLocalId = threadIdx.x + blockIdx.x * blockDim.x;
+    while (iLocalId < iNumberOfRays)
     {
         pHitPoints[iLocalId] = pScene->Intersect(pRays[iLocalId]);
+        iLocalId += gridDim.x * blockDim.x;
     }
 }
 } // namespace impl

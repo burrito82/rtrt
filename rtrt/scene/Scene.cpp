@@ -5,6 +5,7 @@
 #include "Scene.cuh"
 #include "Triangle.cuh"
 #include "../Assert.h"
+#include "../cuda/Device.h"
 #include "../cuda/VectorMemory.h"
 
 #include <algorithm>
@@ -214,9 +215,10 @@ void Scene::Test(int xDim)
     vecHitPoints.resize(vecRays.size());
     cuda::KernelCheck();
     unsigned int iNoRays = static_cast<unsigned int>(vecRays.size());
-    unsigned int iThreadsPerBlock = 1024u;
+    unsigned int iThreadsPerBlock = cuda::Devices::GetInstance().Current().maxThreadsDim[0];
+    unsigned int iGridSize = std::min<unsigned int>((iNoRays - 1u) / iThreadsPerBlock + 1u, cuda::Devices::GetInstance().Current().maxGridSize[0]);
     dim3 blockDim{iThreadsPerBlock};
-    dim3 gridDim{(iNoRays - 1) / iThreadsPerBlock + 1};
+    dim3 gridDim{iGridSize};
     using cuda::kernel::Raytrace;
     cuda::KernelCheck();
     Raytrace(blockDim, gridDim, m_pSceneCuda->CudaPointer(), vecRays.CudaPointer(), vecRays.size(), vecHitPoints.CudaPointer());
