@@ -8,6 +8,7 @@
 #include "Ray.cuh"
 #include "RayTriangleIntersection.cuh"
 #include "Triangle.cuh"
+#include "accel/BvhBoundingBox.h"
 #include "accel/BvhNode.h"
 /*============================================================================*/
 /* DEFINES                                                                    */
@@ -27,14 +28,35 @@ namespace cuda
 
 struct Scene
 {
-    __device__ __host__
+    __device__ __host__ __inline__
     HitPoint Intersect(Ray const &rRay) const
+    {
+        return IntersectBvh(rRay);
+    }
+    __device__ __host__
+    HitPoint IntersectLinear(Ray const &rRay) const
     {
         HitPoint oHitPoint{};
 
         for (size_t iTriangleObjectIndex = 0; iTriangleObjectIndex < m_iNumberOfTriangleObjects; ++iTriangleObjectIndex)
         {
-            HitPoint oTmpHitPoint = IntersectLinear(rRay, iTriangleObjectIndex);
+            HitPoint oTmpHitPoint = IntersectLinear(rRay, iTriangleObjectIndex, oHitPoint);
+            if (oTmpHitPoint && oTmpHitPoint.m_fDistance < oHitPoint.m_fDistance)
+            {
+                oHitPoint = oTmpHitPoint;
+            }
+        }
+
+        return oHitPoint;
+    }
+    __device__ __host__
+    HitPoint IntersectBvh(Ray const &rRay) const
+    {
+        HitPoint oHitPoint{};
+
+        for (size_t iTriangleObjectIndex = 0; iTriangleObjectIndex < m_iNumberOfTriangleObjects; ++iTriangleObjectIndex)
+        {
+            HitPoint oTmpHitPoint = IntersectBvh(rRay, iTriangleObjectIndex, oHitPoint);
             if (oTmpHitPoint && oTmpHitPoint.m_fDistance < oHitPoint.m_fDistance)
             {
                 oHitPoint = oTmpHitPoint;
@@ -74,20 +96,63 @@ struct Scene
 
 private:
     __device__ __host__ __inline__
-    HitPoint IntersectLinear(Ray const &rRay, size_t iTriangleObjectIndex) const
+    HitPoint IntersectLinear(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const
     {
-        HitPoint oHitPoint{};
+        HitPoint oHitPoint{rHitPointBefore};
         size_t const iTriangleBegin = m_pTriangleObjects[iTriangleObjectIndex].m_iStartIndex;
         size_t const iTriangleEnd = m_pTriangleObjects[iTriangleObjectIndex].m_iNumberOfTriangles + iTriangleBegin;
 
         for (size_t iTriangleIndex = iTriangleBegin; iTriangleIndex < iTriangleEnd; ++iTriangleIndex)
         {
             float fDistance = IntersectTriangleWoop(rRay, GetTrianglePoints(iTriangleIndex));
-            if (fDistance > 0.0f && fDistance < oHitPoint.m_fDistance)
+            if (fDistance > 0.0f 
+                && fDistance < oHitPoint.m_fDistance)
             {
                 oHitPoint.m_fDistance = fDistance;
             }
         }
+
+        return oHitPoint;
+    }
+
+
+    __device__ __host__ __inline__
+    HitPoint IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const
+    {
+        HitPoint oHitPoint{rHitPointBefore};
+        bvh::BvhNode const * const pRoot = &m_pBvhs[m_pTriangleObjects[iTriangleObjectIndex].m_iBvhStart];
+
+        size_t aiTraversalStack[64u]{};
+        int iStackIndex = 0;
+        aiTraversalStack[iStackIndex] = 0u;
+
+        do
+        {
+            size_t const iCurrentNodeIndex = aiTraversalStack[iStackIndex--];
+            bvh::BvhNode const &rCurrentNode = pRoot[iCurrentNodeIndex];
+            if (bvh::RayBoxIntersection(rRay, rCurrentNode.m_oBoundingBox, oHitPoint.m_fDistance))
+            {
+                if (rCurrentNode.m_bIsLeaf)
+                {
+                    size_t iBegin = m_pTriangleObjects[iTriangleObjectIndex].m_iStartIndex + rCurrentNode.m_iTriangleIndex;
+                    size_t iEnd = iBegin + rCurrentNode.m_iNumberOfTriangles;
+                    for (size_t iTriangleIndex = iBegin; iTriangleIndex < iEnd; ++iTriangleIndex)
+                    {
+                        float fDistance = IntersectTriangleWoop(rRay, GetTrianglePoints(iTriangleIndex));
+                        if (fDistance > 0.0f && fDistance < oHitPoint.m_fDistance)
+                        {
+                            oHitPoint.m_fDistance = fDistance;
+                        }
+                    }
+                }
+                else
+                {
+                    aiTraversalStack[++iStackIndex] = 2u * iCurrentNodeIndex + 1u;
+                    aiTraversalStack[++iStackIndex] = 2u * iCurrentNodeIndex + 2u;
+                }
+            }
+        }
+        while (iStackIndex >= 0);
 
         return oHitPoint;
     }

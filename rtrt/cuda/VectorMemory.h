@@ -52,6 +52,8 @@ public:
     explicit VectorMemory(Container<T> &&rhs);
     ~VectorMemory();
 
+    explicit operator std::vector<T>() const;
+
     VectorMemory<T, WRITEDIRECTION> &operator=(VectorMemory<T, WRITEDIRECTION> const &rhs);
     VectorMemory<T, WRITEDIRECTION> &operator=(VectorMemory<T, WRITEDIRECTION> &&rhs);
     VectorMemory<T, WRITEDIRECTION> &operator=(Container<T> const &rhs);

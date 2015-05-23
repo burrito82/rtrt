@@ -4,6 +4,8 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
+#include "../Assert.h"
+
 #include <cuda_runtime.h>
 
 #include <stdexcept>
@@ -21,7 +23,7 @@ namespace rtrt
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
 
-class CudaException : public std::runtime_error
+class RTRTAPI CudaException : public std::runtime_error
 {
 public:
     explicit CudaException(cudaError_t iError):

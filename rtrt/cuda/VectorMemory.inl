@@ -73,7 +73,10 @@ VectorMemory<T, WRITEDIRECTION>::VectorMemory(VectorMemory<T, WRITEDIRECTION> co
 {
     reserve(m_vecCpu.capacity());
     resize(m_vecCpu.size());
-    cuda::Checked(cudaMemcpy(m_pCuda.get(), rhs.m_pCuda.get(), sizeof(T) * m_iCudaSize, cudaMemcpyDeviceToDevice));
+    if (rhs.m_pCuda.get())
+    {
+        cuda::Checked(cudaMemcpy(m_pCuda.get(), rhs.m_pCuda.get(), sizeof(T) * m_iCudaSize, cudaMemcpyDeviceToDevice));
+    }
 }
 
 template<typename T, WriteDirection WRITEDIRECTION>
@@ -119,6 +122,12 @@ VectorMemory<T, WRITEDIRECTION>::~VectorMemory()
 /*============================================================================*/
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
+template<typename T, WriteDirection WRITEDIRECTION>
+VectorMemory<T, WRITEDIRECTION>::operator std::vector<T>() const
+{
+    return m_vecCpu;
+}
+
 template<typename T, WriteDirection WRITEDIRECTION>
 VectorMemory<T, WRITEDIRECTION> &VectorMemory<T, WRITEDIRECTION>::operator=(VectorMemory<T, WRITEDIRECTION> const &rhs)
 {

@@ -4,6 +4,7 @@
 /*============================================================================*/
 #include "Scene.cuh"
 #include "Triangle.cuh"
+#include "../Assert.h"
 #include "../cuda/VectorMemory.h"
 
 #include <algorithm>
@@ -71,7 +72,6 @@ Scene::Scene():
     m_vecTriangleObjects{},
     m_vecPoints{},
     m_vecNormals{},
-    m_vecBoundingBoxes{},
     m_oBvhManager{this}
 {
 
@@ -82,26 +82,29 @@ Scene::Scene():
 
 void Scene::AddObject(TriangleObject const &rTriangleObject)
 {
+    Assert(rTriangleObject.m_vecPoints.size() == rTriangleObject.m_vecNormals.size(), "Every vertex must have a normal!");
     auto iPointsNow = m_vecPoints.size();
-    auto iNormalsNow = m_vecNormals.size();
     cuda::TriangleObjectDesc oTriangleObjDesc{};
     oTriangleObjDesc.m_iStartIndex = iPointsNow / 3u;
     oTriangleObjDesc.m_iNumberOfTriangles = rTriangleObject.m_vecPoints.size() / 3u;
     std::copy(std::begin(rTriangleObject.m_vecPoints), std::end(rTriangleObject.m_vecPoints), std::back_inserter(m_vecPoints));
     std::copy(std::begin(rTriangleObject.m_vecNormals), std::end(rTriangleObject.m_vecNormals), std::back_inserter(m_vecNormals));
 
-    size_t const iBegin = oTriangleObjDesc.m_iStartIndex;
-    size_t const iEnd = iBegin + oTriangleObjDesc.m_iNumberOfTriangles;
-    for (size_t iTriangle = iBegin; iTriangle != iEnd; ++iTriangle)
+    std::vector<bvh::BvhBoundingBox> vecBoundingBoxes = m_oBvhManager.AddBvh(oTriangleObjDesc);
+    std::vector<Point> vecPoints(m_vecPoints.size() - iPointsNow);
+    std::vector<Normal> vecNormals(m_vecNormals.size() - iPointsNow);
+    auto it = std::begin(vecBoundingBoxes);
+    for (size_t i = oTriangleObjDesc.m_iStartIndex; it != std::end(vecBoundingBoxes); ++i, ++it)
     {
-        cuda::TrianglePoints oTriangle = GetTrianglePoints(iTriangle);
-        BoundingBox oBoundingBox{thrust::get<0>(oTriangle), thrust::get<0>(oTriangle)};
-        oBoundingBox.Grow(BoundingBox{thrust::get<1>(oTriangle), thrust::get<1>(oTriangle)});
-        oBoundingBox.Grow(BoundingBox{thrust::get<2>(oTriangle), thrust::get<2>(oTriangle)});
-        m_vecBoundingBoxes.push_back(oBoundingBox);
+        vecPoints[3u * i - iPointsNow] = m_vecPoints[3u * it->m_iTriangleIndex + iPointsNow];
+        vecPoints[3u * i - iPointsNow + 1] = m_vecPoints[3u * it->m_iTriangleIndex + iPointsNow + 1u];
+        vecPoints[3u * i - iPointsNow + 2] = m_vecPoints[3u * it->m_iTriangleIndex + iPointsNow + 2u];
+        vecNormals[3u * i - iPointsNow] = m_vecNormals[3u * it->m_iTriangleIndex + iPointsNow];
+        vecNormals[3u * i - iPointsNow + 1] = m_vecNormals[3u * it->m_iTriangleIndex + iPointsNow + 1];
+        vecNormals[3u * i - iPointsNow + 2] = m_vecNormals[3u * it->m_iTriangleIndex + iPointsNow + 2];
     }
-
-    m_oBvhManager.AddBvh(oTriangleObjDesc);
+    std::copy(std::begin(vecPoints), std::end(vecPoints), std::begin(m_vecPoints) + iPointsNow);
+    std::copy(std::begin(vecNormals), std::end(vecNormals), std::begin(m_vecNormals) + iPointsNow);
     m_vecTriangleObjects.push_back(oTriangleObjDesc);
 }
 
@@ -119,20 +122,22 @@ void Scene::Synchronize()
     m_pSceneCuda->Synchronize();
 }
 
-void Scene::Test()
+void Scene::Test(int xDim)
 {
     cuda::KernelCheck();
     cuda::Scene oCpuScene{};
+    oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
+    oCpuScene.m_pTriangleObjects = m_vecTriangleObjects.data();
     oCpuScene.m_pPoints = m_vecPoints.data();
     oCpuScene.m_pNormals = m_vecNormals.data();
-    oCpuScene.m_pTriangleObjects = m_vecTriangleObjects.data();
-    oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
+    oCpuScene.m_pBvhs = m_oBvhManager.data();
 
     rtrt::VectorMemory<Ray> vecRays{};
     rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecHitPoints{};
-    int yDim = 32;
-    int xDim = 64;
+    //int xDim = 78;
+    int yDim = xDim / 2;
     float z = 10;
+    bool bDraw = (2 * xDim < 160);
 
     for (int y = -yDim; y <= yDim; ++y)
     {
@@ -148,33 +153,37 @@ void Scene::Test()
     // CPU
     auto startTime = std::chrono::system_clock::now();
     int iRay = 0;
-    for (int y = -yDim; y <= yDim; ++y)
+    vecHitPoints.resize(vecRays.size());
+    int iRaysEnd = static_cast<int>(vecRays.size());
+#pragma omp parallel for
+    for (int i = 0; i < iRaysEnd; ++i)
     {
-        for (int x = -xDim; x <= xDim; ++x)
-        {
-            vecHitPoints.push_back(oCpuScene.Intersect(vecRays[iRay++]));
-        }
+        vecHitPoints[i] = oCpuScene.IntersectBvh(vecRays[i]);
     }
+
     std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() << " ms" << std::endl;
 
     // DRAW
     iRay = 0;
-    for (int y = -yDim; y <= yDim; ++y)
+    if (bDraw)
     {
-        std::cout << '|';
-        for (int x = -xDim; x <= xDim; ++x)
+        for (int y = -yDim; y <= yDim; ++y)
         {
-            cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
-            if (hitpoint)
+            std::cout << '|';
+            for (int x = -xDim; x <= xDim; ++x)
             {
-                std::cout << "#";
+                cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
+                if (hitpoint)
+                {
+                    std::cout << "#";
+                }
+                else
+                {
+                    std::cout << " ";
+                }
             }
-            else
-            {
-                std::cout << " ";
-            }
+            std::cout << "|\n";
         }
-        std::cout << "|\n";
     }
 
     std::cout << 'x';
@@ -183,6 +192,19 @@ void Scene::Test()
         std::cout << '=';
     }
     std::cout << "x\n";
+
+    vecRays = rtrt::VectorMemory<Ray>{};
+    vecHitPoints = rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU>{};
+    for (int y = -yDim; y <= yDim; ++y)
+    {
+        for (int x = -xDim; x <= xDim; ++x)
+        {
+            vecRays.push_back(Ray{Point{static_cast<float>(x) / (0.5f * xDim), -static_cast<float>(y) / (0.5f * yDim), z}, Normal{0.0f, 0.0f, -1.0f}});
+        }
+    }
+    cuda::KernelCheck();
+    vecRays.Synchronize();
+    cuda::KernelCheck();
 
     // GPU
     startTime = std::chrono::system_clock::now();
@@ -202,22 +224,25 @@ void Scene::Test()
 
     // DRAW
     iRay = 0;
-    for (int y = -yDim; y <= yDim; ++y)
+    if (bDraw)
     {
-        std::cout << '|';
-        for (int x = -xDim; x <= xDim; ++x)
+        for (int y = -yDim; y <= yDim; ++y)
         {
-            cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
-            if (hitpoint)
+            std::cout << '|';
+            for (int x = -xDim; x <= xDim; ++x)
             {
-                std::cout << "#";
+                cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
+                if (hitpoint)
+                {
+                    std::cout << "#";
+                }
+                else
+                {
+                    std::cout << " ";
+                }
             }
-            else
-            {
-                std::cout << " ";
-            }
+            std::cout << "|\n";
         }
-        std::cout << "|\n";
     }
 }
 

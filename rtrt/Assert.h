@@ -4,6 +4,8 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
+#include "LibraryConfig.h"
+
 #include <stdexcept>
 #include <string>
 /*============================================================================*/
@@ -19,7 +21,7 @@ namespace rtrt
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
 
-class RtrtException : public std::runtime_error
+class RTRTAPI RtrtException : public std::runtime_error
 {
 public:
     explicit RtrtException(char const *pError):

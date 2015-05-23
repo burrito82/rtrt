@@ -35,6 +35,7 @@
 
 // Windows DLL build
 #if defined(WIN32) && !defined(rtrt_STATIC) 
+#pragma warning(disable : 4251 4273 4275)
 #ifdef rtrt_EXPORTS
 #define RTRTAPI __declspec(dllexport)
 #else

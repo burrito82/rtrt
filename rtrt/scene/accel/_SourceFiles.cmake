@@ -6,8 +6,7 @@ set( SubDirs )
 
 set( DirFiles
     Bvh.cuh
-    BvhBuilder.cpp
-    BvhBuilder.h
+    BvhBoundingBox.h
     BvhManager.cpp
     BvhManager.h
     BvhNode.h

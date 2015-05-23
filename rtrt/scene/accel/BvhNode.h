@@ -23,7 +23,10 @@ namespace bvh
 struct BvhNode
 {
     BoundingBox m_oBoundingBox;
+    size_t m_iTriangleIndex;
+    size_t m_iNumberOfTriangles;
     bool m_bIsLeaf;
+    size_t m_iChildren;
 };
 
 } // namespace bvh

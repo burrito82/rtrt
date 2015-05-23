@@ -7,6 +7,7 @@ set( SubDirs )
 set( DirFiles
     Assert.h
     Float4.cuh
+    Math.cuh
     VectorMemory.h
     VectorMemory.inl
 

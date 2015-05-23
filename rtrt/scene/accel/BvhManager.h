@@ -4,8 +4,8 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
+#include "BvhBoundingBox.h"
 #include "BvhNode.h"
-#include "../BoundingBox.h"
 #include "../Triangle.cuh"
 #include "../../cuda/VectorMemory.h"
 /*============================================================================*/
@@ -41,14 +41,16 @@ class BvhManager
 public:
     explicit BvhManager::BvhManager(Scene *pScene);
 
-    void AddBvh(cuda::TriangleObjectDesc &oTriangleObjDesc);
+    std::vector<bvh::BvhBoundingBox> AddBvh(cuda::TriangleObjectDesc &oTriangleObjDesc);
     void Synchronize();
 
+    BvhNode *data();
     BvhNode *CudaPointer();
 
 protected:
 private:
     VectorMemory<BvhNode> m_vecBvh;
+    VectorMemory<size_t> m_vecTriangleIndizes;
 
     Scene *m_pScene;
 };

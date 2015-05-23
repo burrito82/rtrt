@@ -37,7 +37,7 @@ public:
     void AddObject(TriangleObject const &rTriangleObject);
     void Synchronize();
 
-    void Test();
+    void Test(int xDim = 78);
 
     cuda::TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
     {
@@ -71,10 +71,6 @@ public:
     {
         return m_vecNormals;
     }
-    std::vector<BoundingBox> const &GetBoundingBoxes() const
-    {
-        return m_vecBoundingBoxes;
-    }
 
 private:
     std::shared_ptr<SceneCuda> m_pSceneCuda;
@@ -82,7 +78,6 @@ private:
     VectorMemory<cuda::TriangleObjectDesc> m_vecTriangleObjects;
     VectorMemory<Point> m_vecPoints;
     VectorMemory<Normal> m_vecNormals;
-    std::vector<BoundingBox> m_vecBoundingBoxes;
     bvh::BvhManager m_oBvhManager;
 };
 

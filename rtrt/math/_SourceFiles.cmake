@@ -5,12 +5,12 @@ set( RelativeSourceGroup "source\\math" )
 set( SubDirs )
 
 set( DirFiles
+    Matrix.cpp
+    Matrix.h
     Normal.cpp
     Normal.h
     Point.cpp
     Point.h
-    Matrix.cpp
-    Matrix.h
     Quaternion.h
     Vector.cpp
     Vector.h

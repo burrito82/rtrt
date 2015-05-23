@@ -2,13 +2,13 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "BvhBuilder.h"
 #include "../Scene.h"
 #include "../../Assert.h"
 
 #include <algorithm>
 #include <iterator>
 #include <queue>
+#include <tuple>
 /*============================================================================*/
 /* MACROS AND DEFINES, CONSTANTS AND STATICS                                  */
 /*============================================================================*/
@@ -25,9 +25,11 @@ namespace
 class BvhTmpNode
 {
 public:
-    BvhTmpNode(VectorMemory<BoundingBox>::iterator const itBegin,
-               VectorMemory<BoundingBox>::iterator const itEnd,
+    BvhTmpNode(VectorMemory<BvhBoundingBox>::iterator const itAbsoluteBegin,
+               VectorMemory<BvhBoundingBox>::iterator const itBegin,
+               VectorMemory<BvhBoundingBox>::iterator const itEnd,
                BoundingBox const &rBoundingBox):
+        m_itAbsoluteBegin{itAbsoluteBegin},
         m_itBegin{itBegin},
         m_itEnd{itEnd},
         m_pLeft{nullptr},
@@ -110,8 +112,8 @@ public:
             }
         }
 
-        m_pLeft = std::make_shared<BvhTmpNode>(m_itBegin, vecBinIterators[iBestBin + 1], vecLeftBoundingBoxes[iBestBin]);
-        m_pRight = std::make_shared<BvhTmpNode>(vecBinIterators[iBestBin + 1], m_itEnd, vecRightBoundingBoxes[iBestBin]);
+        m_pLeft = std::make_shared<BvhTmpNode>(m_itAbsoluteBegin, m_itBegin, vecBinIterators[iBestBin + 1], vecLeftBoundingBoxes[iBestBin]);
+        m_pRight = std::make_shared<BvhTmpNode>(m_itAbsoluteBegin, vecBinIterators[iBestBin + 1], m_itEnd, vecRightBoundingBoxes[iBestBin]);
         m_bIsLeaf = false;
         m_pLeft->Construct();
         m_pRight->Construct();
@@ -119,22 +121,34 @@ public:
 
     std::vector<BvhNode> Serialize() const
     {
-        std::vector<BvhNode> vecResult{};
-        std::queue<BvhTmpNode const *> queueTodo{};
-        queueTodo.push(this);
+        std::vector<BvhNode> vecResult(MaxSize());
+        std::queue<std::tuple<size_t, BvhTmpNode const *>> queueTodo{};
+        queueTodo.push(std::make_tuple(0u, this));
         while (!queueTodo.empty())
         {
-            BvhTmpNode const *pNode = queueTodo.front();
+            size_t iIndex;
+            BvhTmpNode const *pNode;
+            std::tie(iIndex, pNode) = queueTodo.front();
             queueTodo.pop();
             if (!pNode->m_bIsLeaf)
             {
-                queueTodo.push(pNode->Left());
-                queueTodo.push(pNode->Right());
+                queueTodo.push(std::make_tuple(2u * iIndex + 1u, pNode->Left()));
+                queueTodo.push(std::make_tuple(2u * iIndex + 2u, pNode->Right()));
             }
 
-            vecResult.push_back(pNode->SerializeSingle());
+            auto oSerialized = pNode->SerializeSingle();
+            vecResult[iIndex] = oSerialized;
         }
         return vecResult;
+    }
+
+    size_t MaxSize() const
+    {
+        if (m_bIsLeaf)
+        {
+            return 1u;
+        }
+        return 1u + 2u * std::max(m_pLeft->MaxSize(), m_pRight->MaxSize());
     }
 
 private:
@@ -142,12 +156,15 @@ private:
     {
         BvhNode oNode{};
         oNode.m_oBoundingBox = m_oBoundingBox;
+        oNode.m_iTriangleIndex = std::distance(m_itAbsoluteBegin, m_itBegin);
+        oNode.m_iNumberOfTriangles = std::distance(m_itBegin, m_itEnd);
         oNode.m_bIsLeaf = m_bIsLeaf;
         return oNode;
     }
 
-    VectorMemory<BoundingBox>::iterator const m_itBegin;
-    VectorMemory<BoundingBox>::iterator const m_itEnd;
+    VectorMemory<BvhBoundingBox>::iterator const m_itAbsoluteBegin;
+    VectorMemory<BvhBoundingBox>::iterator const m_itBegin;
+    VectorMemory<BvhBoundingBox>::iterator const m_itEnd;
     std::shared_ptr<BvhTmpNode> m_pLeft;
     std::shared_ptr<BvhTmpNode> m_pRight;
     BoundingBox m_oBoundingBox;
@@ -167,32 +184,43 @@ BvhManager::BvhManager(Scene *pScene):
 /*============================================================================*/
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
-void BvhManager::AddBvh(cuda::TriangleObjectDesc &oTriangleObjDesc)
+std::vector<bvh::BvhBoundingBox> BvhManager::AddBvh(cuda::TriangleObjectDesc &rTriangleObjDesc)
 {
-    BoundingBox oSceneBoundingBox{};
-    for (auto const &p : m_pScene->GetPoints())
+    std::vector<bvh::BvhBoundingBox> vecBoundingBoxes{};
+    vecBoundingBoxes.reserve(rTriangleObjDesc.m_iNumberOfTriangles);
+    auto iBegin = rTriangleObjDesc.m_iStartIndex;
+    auto iEnd = iBegin + rTriangleObjDesc.m_iNumberOfTriangles;
+    size_t iWithoutOffset = 0u;
+    for (size_t iTriangle = iBegin; iTriangle != iEnd; ++iTriangle)
     {
-        oSceneBoundingBox.Grow(BoundingBox{p, p});
+        cuda::TrianglePoints oTriangle = m_pScene->GetTrianglePoints(iTriangle);
+        bvh::BvhBoundingBox oBoundingBox{};
+        oBoundingBox.Grow(BoundingBox{thrust::get<0>(oTriangle), thrust::get<0>(oTriangle)});
+        oBoundingBox.Grow(BoundingBox{thrust::get<1>(oTriangle), thrust::get<1>(oTriangle)});
+        oBoundingBox.Grow(BoundingBox{thrust::get<2>(oTriangle), thrust::get<2>(oTriangle)});
+        oBoundingBox.m_iTriangleIndex = iWithoutOffset++;
+        oBoundingBox.m_iNumberOfTriangles = 1u;
+        vecBoundingBoxes.push_back(oBoundingBox);
     }
-    std::vector<size_t> vecTriangleIndizes{};
-    auto iBegin = oTriangleObjDesc.m_iStartIndex;
-    auto iEnd = iBegin + oTriangleObjDesc.m_iNumberOfTriangles;
-    for (auto i = iBegin; i != iEnd; ++i)
+
+    BoundingBox oSceneBoundingBox{};
+    for (auto const &bb : vecBoundingBoxes)
     {
-        vecTriangleIndizes.push_back(i);
+        oSceneBoundingBox.Grow(bb);
     }
 
     BvhTmpNode oBvhBuilding
     {
-        std::begin(m_pScene->m_vecBoundingBoxes) + iBegin,
-        std::begin(m_pScene->m_vecBoundingBoxes) + iEnd,
+        std::begin(vecBoundingBoxes),
+        std::begin(vecBoundingBoxes),
+        std::end(vecBoundingBoxes),
         oSceneBoundingBox
     };
     oBvhBuilding.Construct();
     auto vecBvhNodes = oBvhBuilding.Serialize();
-    oTriangleObjDesc.m_iBvhStart = m_vecBvh.size();
+    rTriangleObjDesc.m_iBvhStart = m_vecBvh.size();
     std::move(std::begin(vecBvhNodes), std::end(vecBvhNodes), std::back_inserter(m_vecBvh));
-    Assert(false, "BvhManager::AddBvh() => sort triangles (e.g. points + normals), or create a link structure to sort instead!");
+    return vecBoundingBoxes;
 }
 
 void BvhManager::Synchronize()
@@ -203,6 +231,11 @@ void BvhManager::Synchronize()
 BvhNode *BvhManager::CudaPointer()
 {
     return m_vecBvh.CudaPointer();
+}
+
+BvhNode *BvhManager::data()
+{
+    return m_vecBvh.data();
 }
 
 } // namespace bvh

@@ -1,13 +1,10 @@
-#ifndef RTRT_SCENE_ACCEL_BVHCONSTRUCTOR_H
-#define RTRT_SCENE_ACCEL_BVHCONSTRUCTOR_H
+#ifndef RTRT_CUDA_MATH_CUH
+#define RTRT_CUDA_MATH_CUH
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "BvhNode.h"
 
-#include <memory>
-#include <vector>
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -17,41 +14,27 @@
 /*============================================================================*/
 namespace rtrt
 {
-namespace bvh
+namespace cuda
 {
-//class BvhTmpNode;
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
 
-/*============================================================================*/
-/* CLASS DEFINITIONS                                                          */
-/*============================================================================*/
-
-/**
- * @param
- * @return
- * @see
- * @todo
- * @bug
- * @deprecated
- */
-class BvhBuilder
+template<typename T>
+__device__ __host__ __inline__
+T min(T lhs, T rhs)
 {
-public:
-    //BvhBuilder(cuda::TriangleObjectDesc const &oTriangleObjDesc);
+    return (lhs < rhs) ? lhs : rhs;
+}
 
-    std::vector<BvhNode> GetBvh()
-    { }
-protected:
-private:
+template<typename T>
+__device__ __host__ __inline__
+T max(T lhs, T rhs)
+{
+    return (lhs > rhs) ? lhs : rhs;
+}
 
-
-    //std::shared_ptr<BvhTmpNode> m_pRoot;
-};
-
-} // namespace bvh
+} // namespace cuda
 } // namespace rtrt
 
-#endif // ! RTRT_SCENE_ACCEL_BVHCONSTRUCTOR_H
-
+#endif // ! RTRT_CUDA_MATH_CUH
