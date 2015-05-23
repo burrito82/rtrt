@@ -51,7 +51,7 @@ public:
                    VectorMemory<cuda::HitPoint, GPU_TO_CPU> &rVecHitPoints,
                    Hardware eHardware = GPU);
 
-    void Test(int xDim = 78);
+    std::vector<unsigned char> Test(int iWidth = 150, int iHeight = 80, Hardware eHardware = GPU);
     void Raytrace();
 
     cuda::TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const

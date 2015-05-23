@@ -123,7 +123,7 @@ void Scene::Synchronize()
     m_pSceneCuda->Synchronize();
 }
 
-void Scene::Test(int xDim)
+std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardware)
 {
     cuda::KernelCheck();
     cuda::Scene oCpuScene{};
@@ -135,104 +135,114 @@ void Scene::Test(int xDim)
 
     rtrt::VectorMemory<Ray> vecRays{};
     rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecHitPoints{};
-    int yDim = xDim / 2;
     float z = 10;
-    bool bDraw = (2 * xDim < 160);
+    bool bDraw = (iWidth < 160);
 
-    for (int y = -yDim; y <= yDim; ++y)
+    float fCameraExtentX = 4.0f;
+    float fCameraExtentY = 4.0f;
+    for (int yStep = 0; yStep < iHeight; ++yStep)
     {
-        for (int x = -xDim; x <= xDim; ++x)
+        for (int xStep = 0; xStep < iWidth; ++xStep)
         {
-            vecRays.push_back(Ray{Point{static_cast<float>(x) / (0.5f * xDim), -static_cast<float>(y) / (0.5f * yDim), z}, Normal{0.0f, 0.0f, -1.0f}});
+            vecRays.push_back(Ray{Point{
+                fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth) - 0.5f),
+                -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight) - 0.5f),
+                z}, 
+                Normal{0.0f, 0.0f, -1.0f}});
         }
     }
     cuda::KernelCheck();
     vecRays.Synchronize();
     cuda::KernelCheck();
 
-    // CPU
-    auto startTime = std::chrono::system_clock::now();
-    Intersect(vecRays, vecHitPoints, CPU);
-    auto duration = std::chrono::system_clock::now() - startTime;
-    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms\t("
-        << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
-        << vecRays.size() << " rays,\t"
-        << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
-
-    // DRAW
-    if (bDraw)
+    if (eHardware == CPU)
     {
-        int iRay = 0;
-        for (int y = -yDim; y <= yDim; ++y)
+        // CPU
+        auto startTime = std::chrono::system_clock::now();
+        Intersect(vecRays, vecHitPoints, CPU);
+        auto duration = std::chrono::system_clock::now() - startTime;
+        std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms\t("
+            << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
+            << vecRays.size() << " rays,\t"
+            << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
+
+        // DRAW
+        if (bDraw)
         {
-            std::cout << '|';
-            for (int x = -xDim; x <= xDim; ++x)
+            int iRay = 0;
+            for (int y = 0; y < iHeight; ++y)
             {
-                cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
-                if (hitpoint)
+                std::cout << '|';
+                for (int x = 0; x < iWidth; ++x)
                 {
-                    std::cout << "#";
+                    cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
+                    if (hitpoint)
+                    {
+                        std::cout << "#";
+                    }
+                    else
+                    {
+                        std::cout << " ";
+                    }
                 }
-                else
-                {
-                    std::cout << " ";
-                }
+                std::cout << "|\n";
             }
-            std::cout << "|\n";
-        }
 
-        std::cout << 'x';
-        for (int x = -xDim; x <= xDim; ++x)
-        {
-            std::cout << '=';
-        }
-        std::cout << "x\n";
-    }
-
-    vecRays = rtrt::VectorMemory<Ray>{};
-    vecHitPoints = rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU>{};
-    for (int y = -yDim; y <= yDim; ++y)
-    {
-        for (int x = -xDim; x <= xDim; ++x)
-        {
-            vecRays.push_back(Ray{Point{static_cast<float>(x) / (0.5f * xDim), -static_cast<float>(y) / (0.5f * yDim), z}, Normal{0.0f, 0.0f, -1.0f}});
-        }
-    }
-    cuda::KernelCheck();
-    vecRays.Synchronize();
-    cuda::KernelCheck();
-
-    // GPU
-    startTime = std::chrono::system_clock::now();
-    Intersect(vecRays, vecHitPoints, GPU);
-    duration = std::chrono::system_clock::now() - startTime;
-    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms\t("
-        << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
-        << vecRays.size() << " rays,\t"
-        << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
-
-    // DRAW
-    if (bDraw)
-    {
-        int iRay = 0;
-        for (int y = -yDim; y <= yDim; ++y)
-        {
-            std::cout << '|';
-            for (int x = -xDim; x <= xDim; ++x)
+            std::cout << 'x';
+            for (int x = 0; x < iWidth; ++x)
             {
-                cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
-                if (hitpoint)
-                {
-                    std::cout << "#";
-                }
-                else
-                {
-                    std::cout << " ";
-                }
+                std::cout << '=';
             }
-            std::cout << "|\n";
+            std::cout << "x\n";
         }
     }
+
+    if (eHardware == GPU)
+    {
+        // GPU
+        auto startTime = std::chrono::system_clock::now();
+        Intersect(vecRays, vecHitPoints, GPU);
+        auto duration = std::chrono::system_clock::now() - startTime;
+        std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms\t("
+            << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
+            << vecRays.size() << " rays,\t"
+            << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
+
+        // DRAW
+        if (bDraw)
+        {
+            int iRay = 0;
+            for (int y = 0; y < iHeight; ++y)
+            {
+                std::cout << '|';
+                for (int x = 0; x < iWidth; ++x)
+                {
+                    cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
+                    if (hitpoint)
+                    {
+                        std::cout << "#";
+                    }
+                    else
+                    {
+                        std::cout << " ";
+                    }
+                }
+                std::cout << "|\n";
+            }
+        }
+    }
+
+    std::vector<unsigned char> vecResult{};
+    for (auto const &hit : vecHitPoints)
+    {
+        unsigned char c = 0;
+        if (!std::isinf(hit.m_fDistance))
+        {
+            c = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, 255 - static_cast<int>(hit.m_fDistance))));
+        }
+        vecResult.insert(std::end(vecResult), {c, c, c, 0xff});
+    }
+    return vecResult;
 }
 
 void Scene::Intersect(VectorMemory<Ray> const &rVecRays,
