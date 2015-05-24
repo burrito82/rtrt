@@ -9,6 +9,10 @@ set( DirFiles
     Device.h
     Float4.cuh
     Math.h
+    TypeVerifier.cu
+    TypeVerifier.cuh
+    TypeVerifier.cpp
+    TypeVerifier.h
     VectorMemory.h
     VectorMemory.inl
 

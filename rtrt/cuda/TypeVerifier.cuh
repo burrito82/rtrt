@@ -1,12 +1,10 @@
-#ifndef RTRT_HITPOINT_H
-#define RTRT_HITPOINT_H
+#ifndef RTRT_CUDA_TYPEVERIFIER_CUH
+#define RTRT_CUDA_TYPEVERIFIER_CUH
+
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "../math/Normal.h"
-#include "../math/Point.h"
-#include <limits>
-#include <cfloat>
+
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -16,41 +14,28 @@
 /*============================================================================*/
 namespace rtrt
 {
+struct Ray;
+struct Float4;
+struct Normal;
+struct Point;
+struct Vector;
 namespace cuda
 {
+struct HitPoint;
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
-struct HitPoint
-{
-    __device__ __host__
-    HitPoint():
-        m_fDistance{inf()},
-        p{},
-        n{1.0f, 0.0f, 0.0f}
-    {
 
-    }
-
-    __device__ __host__
-    operator bool() const
-    {
-        return (m_fDistance > 0.0f && m_fDistance < inf());
-    }
-
-    __device__ __host__
-    static float inf()
-    {
-        return 1.0e+30f;
-    }
-
-    float m_fDistance;
-    Point p;
-    Normal n;
-};
+size_t GetTypeSize(HitPoint const &);
+size_t GetTypeSize(Ray const &);
+size_t GetTypeSize(Float4 const &);
+size_t GetTypeSize(Normal const &);
+size_t GetTypeSize(Point const &);
+size_t GetTypeSize(Vector const &);
 
 } // namespace cuda
 } // namespace rtrt
 
-#endif // ! RTRT_HITPOINT_H
+
+#endif // ! RTRT_CUDA_TYPEVERIFIER_CUH
 

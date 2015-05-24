@@ -6,6 +6,7 @@
 #include "Triangle.cuh"
 #include "../Assert.h"
 #include "../cuda/Device.h"
+#include "../cuda/TypeVerifier.h"
 #include "../cuda/VectorMemory.h"
 
 #include <algorithm>
@@ -121,21 +122,11 @@ void Scene::Synchronize()
     m_pSceneCuda->Get().m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
     m_pSceneCuda->Get().m_pBvhs = m_oBvhManager.CudaPointer();
     m_pSceneCuda->Synchronize();
-
-    std::cout << "m_pSceneCuda->Get().m_iNumberOfTriangleObjects = " << m_pSceneCuda->Get().m_iNumberOfTriangleObjects << std::endl;
-    for (auto const &o : m_vecTriangleObjects)
-    {
-        std::cout << o.m_iStartIndex << ", " << o.m_iNumberOfTriangles << ", " << o.m_iBvhStart << std::endl;
-    }
 }
 
 std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardware)
 {
-    Synchronize();
-    std::cout << cuda::Devices::GetInstance().size() << " devices found!" << std::endl;
-    static int const iMaxThreads = cuda::Devices::GetInstance().Current().maxThreadsDim[0];
-    static int const iMaxBlocks = cuda::Devices::GetInstance().Current().maxGridSize[0];
-    std::cout << "maximum of " << iMaxThreads << " threads and " << iMaxBlocks << " blocks" << std::endl;
+    cuda::TypeVerifier::VerifySize();
     cuda::KernelCheck();
     cuda::Scene oCpuScene{};
     oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
@@ -155,19 +146,19 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
     {
         for (int xStep = 0; xStep < iWidth; ++xStep)
         {
-            vecRays.push_back(Ray{Point{
+            /*vecRays.push_back(Ray{Point{
                 fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth) - 0.5f),
                 -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight) - 0.5f),
                 z},
-                Normal{0.0f, 0.0f, -1.0f}});
-            /*vecRays.push_back(Ray{Point{
+                Normal{0.0f, 0.0f, -1.0f}});*/
+            vecRays.push_back(Ray{Point{
                 0.0f,
                 0.0f,
                 z},
                 Normal{
                     fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth) - 0.5f),
                     -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight) - 0.5f),
-                    -2.0f}});*/
+                    -2.0f}});
         }
     }
     cuda::KernelCheck();
@@ -223,11 +214,7 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
         vecRays.Synchronize();
         cuda::KernelCheck();
         auto startTime = std::chrono::system_clock::now();
-        cuda::KernelCheck();
         Intersect(vecRays, vecHitPoints, GPU);
-        cuda::KernelCheck();
-        vecHitPoints.Synchronize();
-        cuda::KernelCheck();
         auto duration = std::chrono::system_clock::now() - startTime;
         std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms\t("
             << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
@@ -261,12 +248,6 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
     std::vector<unsigned char> vecResult{};
     for (auto const &hit : vecHitPoints)
     {
-        /*unsigned char c = 0;
-        if (!std::isinf(hit.m_fDistance))
-        {
-            c = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, 255 - static_cast<int>(hit.m_fDistance))));
-        }
-        vecResult.insert(std::end(vecResult), {c, c, c, 0xff});*/
         vecResult.insert(std::end(vecResult),
         {
             static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[0])))),
@@ -290,17 +271,6 @@ void Scene::Intersect(VectorMemory<Ray> const &rVecRays,
         cuda::KernelCheck();
         rVecHitPoints.Synchronize();
         cuda::KernelCheck();
-        /*cuda::KernelCheck();
-        unsigned int iNoRays = static_cast<unsigned int>(rVecRays.size());
-        unsigned int iThreadsPerBlock = cuda::Devices::GetInstance().Current().maxThreadsDim[0];
-        unsigned int iGridSize = std::min<unsigned int>((iNoRays - 1u) / iThreadsPerBlock + 1u, cuda::Devices::GetInstance().Current().maxGridSize[0]);
-        dim3 i3BlockDim{iThreadsPerBlock};
-        dim3 i3GridDim{iGridSize};
-        cuda::KernelCheck();
-        cuda::kernel::Raytrace(i3BlockDim, i3GridDim, m_pSceneCuda->CudaPointer(), rVecRays.CudaPointer(), rVecRays.size(), rVecHitPoints.CudaPointer());
-        cuda::KernelCheck();
-        rVecHitPoints.Synchronize();
-        cuda::KernelCheck();*/
     }
     else
     {
