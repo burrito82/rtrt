@@ -125,7 +125,7 @@ private:
         bvh::BvhNode const * const pRoot = &m_pBvhs[m_pTriangleObjects[iTriangleObjectIndex].m_iBvhStart];
 
         int aiTraversalStack[64];
-        int iStackIndex = 1;
+        int iStackIndex = 0;
         aiTraversalStack[0] = -1;
         int iCurrentNodeIndex = 0;
         bvh::BvhNode const *pCurrentNode = nullptr;
