@@ -7,12 +7,12 @@ set( SubDirs )
 set( DirFiles
     Matrix.cpp
     Matrix.h
-    Normal.cpp
+    Normal.inl
     Normal.h
-    Point.cpp
+    Point.inl
     Point.h
     Quaternion.h
-    Vector.cpp
+    Vector.inl
     Vector.h
 
     _SourceFiles.cmake

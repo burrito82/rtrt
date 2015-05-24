@@ -3,6 +3,9 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
+#include "../math/Normal.h"
+#include "../math/Point.h"
+#include "../Align.h"
 #include <limits>
 #include <cfloat>
 /*============================================================================*/
@@ -19,12 +22,14 @@ namespace cuda
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
+//ALIGNED_TYPE(struct, HitPoint, 64)
 struct HitPoint
 {
     __device__ __host__
-        HitPoint():
-        //m_fDistance{std::numeric_limits<float>::infinity()}
-        m_fDistance{inf()}
+    HitPoint():
+        m_fDistance{inf()},
+        p{},
+        n{1.0f, 0.0f, 0.0f}
     {
 
     }
@@ -42,6 +47,8 @@ struct HitPoint
     }
 
     float m_fDistance;
+    Point p;
+    Normal n;
 };
 
 } // namespace cuda

@@ -1,3 +1,5 @@
+#ifndef RTRT_MATH_POINT_INL
+#define RTRT_MATH_POINT_INL
 #include "Point.h"
 
 /*============================================================================*/
@@ -22,6 +24,7 @@ namespace rtrt
 /*============================================================================*/
 
 // add offset
+__device__ __host__ __inline__
 Point const operator+(Point const &p, Vector const &v)
 {
     return Point
@@ -32,6 +35,7 @@ Point const operator+(Point const &p, Vector const &v)
     };
 }
 
+__device__ __host__ __inline__
 Point const operator+(Vector const &v, Point const &p)
 {
     return Point
@@ -42,6 +46,7 @@ Point const operator+(Vector const &v, Point const &p)
     };
 }
 
+__device__ __host__ __inline__
 Point &operator+=(Point &p, Vector const &v)
 {
     p.x += v.x;
@@ -51,6 +56,7 @@ Point &operator+=(Point &p, Vector const &v)
 }
 
 // sub offset
+__device__ __host__ __inline__
 Point const operator-(Point const &p, Vector const &v)
 {
     return Point
@@ -61,6 +67,7 @@ Point const operator-(Point const &p, Vector const &v)
     };
 }
 
+__device__ __host__ __inline__
 Point const operator-(Vector const &v, Point const &p)
 {
     return Point
@@ -71,6 +78,7 @@ Point const operator-(Vector const &v, Point const &p)
     };
 }
 
+__device__ __host__ __inline__
 Point &operator-=(Point &p, Vector const &v)
 {
     p.x -= v.x;
@@ -80,6 +88,7 @@ Point &operator-=(Point &p, Vector const &v)
 }
 
 // get offset
+__device__ __host__ __inline__
 Vector const operator-(Point const &from, Point const &to)
 {
     return Vector
@@ -90,11 +99,13 @@ Vector const operator-(Point const &from, Point const &to)
     };
 }
 
+__device__ __host__ __inline__
 float DistanceSquared(Point const &lhs, Point const &rhs)
 {
     return LengthSquared(lhs - rhs);
 }
 
+__device__ __host__ __inline__
 float Distance(Point const &lhs, Point const &rhs)
 {
     return Length(lhs - rhs);
@@ -102,3 +113,4 @@ float Distance(Point const &lhs, Point const &rhs)
 
 } // namespace rtrt
 
+#endif // ! RTRT_MATH_POINT_INL

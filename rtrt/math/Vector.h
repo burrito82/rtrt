@@ -28,12 +28,14 @@ struct RTRTAPI Vector : public Float4
     {
     }
 
+    __device__ __host__
     explicit Vector(Float4 const &f4):
         Float4{f4}
     {
 
     }
 
+    __device__ __host__
     float Dot(Vector const &rhs) const
     {
         return x * rhs.x
@@ -41,11 +43,13 @@ struct RTRTAPI Vector : public Float4
             + z * rhs.z;
     }
 
+    __device__ __host__
     float AbsDot(Vector const &rhs) const
     {
         return std::abs(this->Dot(rhs));
     }
 
+    __device__ __host__
     Vector const Cross(Vector const &rhs) const
     {
         return Vector
@@ -56,16 +60,19 @@ struct RTRTAPI Vector : public Float4
         };
     }
 
+    __device__ __host__
     float LengthSquared() const
     {
         return this->Dot(*this);
     }
 
+    __device__ __host__
     float Length() const
     {
         return std::sqrt(this->LengthSquared());
     }
 
+    __device__ __host__
     Vector &Normalize()
     {
         float const fLength = Length();
@@ -75,6 +82,7 @@ struct RTRTAPI Vector : public Float4
         return *this;
     }
 
+    __device__ __host__
     Vector const Normalized() const
     {
         return Vector{*this}.Normalize();
@@ -109,5 +117,7 @@ RTRTAPI Vector const Normalized(Vector v);
 void CoordinateSystem(Vector const &v0, Vector &v1, Vector &v2);
 
 } // namespace rtrt
+
+#include "Vector.inl"
 
 #endif // ! RTRT_MATH_VECTOR_H

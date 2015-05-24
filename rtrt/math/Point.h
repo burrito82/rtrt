@@ -22,11 +22,13 @@ namespace rtrt
 
 struct RTRTAPI Point : public Float4
 {
+    __device__ __host__
     Point(float x_ = 0.0f, float y_ = 0.0f, float z_ = 0.0f):
         Float4{x_, y_, z_, 1.0f}
     {
     }
 
+    __device__ __host__
     explicit Point(Float4 const &f4):
         Float4{f4}
     {
@@ -50,5 +52,7 @@ RTRTAPI float DistanceSquared(Point const &lhs, Point const &rhs);
 RTRTAPI float Distance(Point const &lhs, Point const &rhs);
 
 } // namespace rtrt
+
+#include "Point.inl"
 
 #endif // ! RTRT_MATH_POINT_H

@@ -8,7 +8,7 @@ set( DirFiles
     Assert.h
     Device.h
     Float4.cuh
-    Math.cuh
+    Math.h
     VectorMemory.h
     VectorMemory.inl
 

@@ -109,6 +109,8 @@ private:
                 && fDistance < oHitPoint.m_fDistance)
             {
                 oHitPoint.m_fDistance = fDistance;
+                oHitPoint.p = rRay.origin + fDistance * rRay.direction;
+                oHitPoint.n = thrust::get<0>(GetTriangleNormals(iTriangleIndex)); // TODO
             }
         }
 
@@ -149,6 +151,8 @@ private:
                         if (fDistance > 0.0f && fDistance < oHitPoint.m_fDistance)
                         {
                             oHitPoint.m_fDistance = fDistance;
+                            oHitPoint.p = rRay.origin + fDistance * rRay.direction;
+                            oHitPoint.n = thrust::get<0>(GetTriangleNormals(iTriangleIndex)); // TODO
                         }
                     }
 
@@ -212,7 +216,7 @@ private:
 namespace kernel
 {
 
-__host__ void Raytrace(dim3 blockDim, dim3 gridDim, Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints);
+__host__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints);
 
 namespace impl
 {

@@ -1,3 +1,5 @@
+#ifndef RTRT_MATH_VECTOR_INL
+#define RTRT_MATH_VECTOR_INL
 #include "Vector.h"
 
 /*============================================================================*/
@@ -21,12 +23,14 @@ namespace rtrt
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
 
+__device__ __host__ __inline__
 Vector const operator-(Vector const &n)
 {
     return Vector{-n.x, -n.y, -n.z};
 }
 
 // addition
+__device__ __host__ __inline__
 Vector const operator+(Vector const &lhs, Vector const &rhs)
 {
     return Vector
@@ -37,6 +41,7 @@ Vector const operator+(Vector const &lhs, Vector const &rhs)
     };
 }
 
+__device__ __host__ __inline__
 Vector &operator+=(Vector &lhs, Vector const &rhs)
 {
     lhs.x += rhs.x;
@@ -46,6 +51,7 @@ Vector &operator+=(Vector &lhs, Vector const &rhs)
 }
 
 // subtraction
+__device__ __host__ __inline__
 Vector const operator-(Vector const &lhs, Vector const &rhs)
 {
     return Vector
@@ -56,6 +62,7 @@ Vector const operator-(Vector const &lhs, Vector const &rhs)
     };
 }
 
+__device__ __host__ __inline__
 Vector &operator-=(Vector &lhs, Vector const &rhs)
 {
     lhs.x -= rhs.x;
@@ -65,6 +72,7 @@ Vector &operator-=(Vector &lhs, Vector const &rhs)
 }
 
 // scaling
+__device__ __host__ __inline__
 Vector const operator*(float lhs, Vector const &rhs)
 {
     return Vector
@@ -75,6 +83,7 @@ Vector const operator*(float lhs, Vector const &rhs)
     };
 }
 
+__device__ __host__ __inline__
 Vector const operator*(Vector const &lhs, float rhs)
 {
     return Vector
@@ -85,6 +94,7 @@ Vector const operator*(Vector const &lhs, float rhs)
     };
 }
 
+__device__ __host__ __inline__
 Vector &operator*=(Vector &lhs, float rhs)
 {
     lhs.x *= rhs;
@@ -94,16 +104,19 @@ Vector &operator*=(Vector &lhs, float rhs)
 }
 
 // inv scaling by division
+__device__ __host__ __inline__
 Vector const operator/(Vector const &lhs, float rhs)
 {
     return (1.0f / rhs) * lhs;
 }
 
+__device__ __host__ __inline__
 Vector &operator/=(Vector &lhs, float rhs)
 {
     return lhs *= (1.0f / rhs);
 }
 
+__device__ __host__ __inline__
 float Dot(Vector const &lhs, Vector const &rhs)
 {
     return lhs.x * rhs.x
@@ -111,11 +124,13 @@ float Dot(Vector const &lhs, Vector const &rhs)
         + lhs.z * rhs.z;
 }
 
+__device__ __host__ __inline__
 float AbsDot(Vector const &lhs, Vector const &rhs)
 {
     return std::abs(Dot(lhs, rhs));
 }
 
+__device__ __host__ __inline__
 Vector const Cross(Vector const &lhs, Vector const &rhs)
 {
     return Vector
@@ -126,21 +141,25 @@ Vector const Cross(Vector const &lhs, Vector const &rhs)
     };
 }
 
+__device__ __host__ __inline__
 float LengthSquared(Vector const &v)
 {
     return Dot(v, v);
 }
 
+__device__ __host__ __inline__
 float Length(Vector const &v)
 {
     return std::sqrt(LengthSquared(v));
 }
 
+__device__ __host__ __inline__
 Vector &Normalize(Vector &v)
 {
     return v /= Length(v);
 }
 
+__device__ __host__ __inline__
 Vector const Normalized(Vector v)
 {
     return Normalize(v);
@@ -150,6 +169,7 @@ Vector const Normalized(Vector v)
 /* OTHER HELPER FUNCTIONS                                                     */
 /*============================================================================*/
 
+__device__ __host__ __inline__
 void CoordinateSystem(Vector const &v0, Vector &v1, Vector &v2)
 {
     if (std::abs(v0.x) > std::abs(v0.y))
@@ -167,3 +187,4 @@ void CoordinateSystem(Vector const &v0, Vector &v1, Vector &v2)
 
 } // namespace rtrt
 
+#endif // ! RTRT_MATH_VECTOR_INL

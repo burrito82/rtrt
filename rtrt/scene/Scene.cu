@@ -3,6 +3,8 @@
 /* INCLUDES                                                                   */
 /*============================================================================*/
 #include "../cuda/Assert.h"
+#include "../cuda/Device.h"
+#include "../cuda/Math.h"
 /*============================================================================*/
 /* MACROS AND DEFINES, CONSTANTS AND STATICS                                  */
 /*============================================================================*/
@@ -25,11 +27,31 @@ namespace cuda
 namespace kernel
 {
 
-__host__ void Raytrace(dim3 blockDim, dim3 gridDim, Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints)
+__host__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints)
 {
-    KernelCheck();
+    using cuda::min;
+    using cuda::max;
+    static int const iMaxThreads = cuda::Devices::GetInstance().Current().maxThreadsDim[0];
+    static int const iMaxBlocks = cuda::Devices::GetInstance().Current().maxGridSize[0];
+    dim3 blockDim;
+    dim3 gridDim;
+    
+    for (size_t iBegin = 0ull; iBegin < iNumberOfRays;)
+    {
+        size_t iNumberOfRaysBatch = min(iNumberOfRays - iBegin, 81920ull);
+        unsigned int iThreadsPerBlock = iMaxThreads;
+        unsigned int iGridSize = min<unsigned int>((iNumberOfRaysBatch - 1u) / iThreadsPerBlock + 1u, iMaxBlocks);
+        blockDim.x = iThreadsPerBlock;
+        gridDim.x = iGridSize;
+        Ray const *pRaysBatch = pRays + iBegin;
+        HitPoint *pHitPointsBatch = pHitPoints + iBegin;
+        KernelCheck();
+        impl::Raytrace<<<gridDim, blockDim>>>(pScene, pRaysBatch, iNumberOfRaysBatch, pHitPointsBatch);
+        iBegin += iNumberOfRaysBatch;
+    };
+    /*KernelCheck();
     impl::Raytrace<<<gridDim, blockDim>>>(pScene, pRays, iNumberOfRays, pHitPoints);
-    KernelCheck();
+    KernelCheck();*/
 }
 
 namespace impl

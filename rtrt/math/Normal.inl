@@ -1,3 +1,5 @@
+#ifndef RTRT_MATH_NORMAL_INL
+#define RTRT_MATH_NORMAL_INL
 #include "Normal.h"
 
 /*============================================================================*/
@@ -21,12 +23,14 @@ namespace rtrt
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
 
+__device__ __host__ __inline__
 Normal const operator-(Normal const &n)
 {
     return Normal{-n.x, -n.y, -n.z};
 }
 
 // addition
+__device__ __host__ __inline__
 Normal const operator+(Normal const &lhs, Normal const &rhs)
 {
     return Normal
@@ -37,6 +41,7 @@ Normal const operator+(Normal const &lhs, Normal const &rhs)
     };
 }
 
+__device__ __host__ __inline__
 Normal &operator+=(Normal &lhs, Normal const &rhs)
 {
     lhs.x += rhs.x;
@@ -47,6 +52,7 @@ Normal &operator+=(Normal &lhs, Normal const &rhs)
 }
 
 // subtraction
+__device__ __host__ __inline__
 Normal const operator-(Normal const &lhs, Normal const &rhs)
 {
     return Normal
@@ -57,6 +63,7 @@ Normal const operator-(Normal const &lhs, Normal const &rhs)
     };
 }
 
+__device__ __host__ __inline__
 Normal &operator-=(Normal &lhs, Normal const &rhs)
 {
     lhs.x -= rhs.x;
@@ -67,6 +74,7 @@ Normal &operator-=(Normal &lhs, Normal const &rhs)
 }
 
 // scaling
+__device__ __host__ __inline__
 Vector const operator*(float lhs, Normal const &rhs)
 {
     return Vector
@@ -77,6 +85,7 @@ Vector const operator*(float lhs, Normal const &rhs)
     };
 }
 
+__device__ __host__ __inline__
 Vector const operator*(Normal const &lhs, float rhs)
 {
     return Vector
@@ -88,11 +97,13 @@ Vector const operator*(Normal const &lhs, float rhs)
 }
 
 // inv scaling by division
+__device__ __host__ __inline__
 Vector const operator/(Normal const &lhs, float rhs)
 {
     return (1.0f / rhs) * lhs;
 }
 
+__device__ __host__ __inline__
 float Dot(Normal const &lhs, Normal const &rhs)
 {
     return lhs.x * rhs.x
@@ -100,6 +111,7 @@ float Dot(Normal const &lhs, Normal const &rhs)
         + lhs.z * rhs.z;
 }
 
+__device__ __host__ __inline__
 float Dot(Vector const &lhs, Normal const &rhs)
 {
     return lhs.x * rhs.x
@@ -107,6 +119,7 @@ float Dot(Vector const &lhs, Normal const &rhs)
         + lhs.z * rhs.z;
 }
 
+__device__ __host__ __inline__
 float Dot(Normal const &lhs, Vector const &rhs)
 {
     return lhs.x * rhs.x
@@ -114,21 +127,25 @@ float Dot(Normal const &lhs, Vector const &rhs)
         + lhs.z * rhs.z;
 }
 
+__device__ __host__ __inline__
 float AbsDot(Normal const &lhs, Normal const &rhs)
 {
     return std::abs(Dot(lhs, rhs));
 }
 
+__device__ __host__ __inline__
 float AbsDot(Vector const &lhs, Normal const &rhs)
 {
     return std::abs(Dot(lhs, rhs));
 }
 
+__device__ __host__ __inline__
 float AbsDot(Normal const &lhs, Vector const &rhs)
 {
     return std::abs(Dot(lhs, rhs));
 }
 
+__device__ __host__ __inline__
 Normal FaceForward(Normal const &n, Vector const &v)
 {
     return (Dot(n, v) > 0.0f ? n : -n);
@@ -136,3 +153,4 @@ Normal FaceForward(Normal const &n, Vector const &v)
 
 } // namespace rtrt
 
+#endif // ! RTRT_MATH_NORMAL_INL
