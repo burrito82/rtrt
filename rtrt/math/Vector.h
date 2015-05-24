@@ -89,31 +89,36 @@ struct RTRTAPI Vector : public Float4
     }
 };
 
-RTRTAPI Vector const operator-(Vector const &n);
+#define RMVHL __device__ __host__ __inline__ RTRTAPI
+
+RMVHL Vector const operator-(Vector const &n);
 // addition
-RTRTAPI Vector const operator+(Vector const &lhs, Vector const &rhs);
-RTRTAPI Vector &operator+=(Vector &lhs, Vector const &rhs);
+RMVHL Vector const operator+(Vector const &lhs, Vector const &rhs);
+RMVHL Vector &operator+=(Vector &lhs, Vector const &rhs);
 // subtraction
-RTRTAPI Vector const operator-(Vector const &lhs, Vector const &rhs);
-RTRTAPI Vector &operator-=(Vector &lhs, Vector const &rhs);
+RMVHL Vector const operator-(Vector const &lhs, Vector const &rhs);
+RMVHL Vector &operator-=(Vector &lhs, Vector const &rhs);
 // scaling
-RTRTAPI Vector const operator*(float lhs, Vector const &rhs);
-RTRTAPI Vector const operator*(Vector const &lhs, float rhs);
-RTRTAPI Vector &operator*=(Vector &lhs, float rhs);
+RMVHL Vector const operator*(float lhs, Vector const &rhs);
+RMVHL Vector const operator*(Vector const &lhs, float rhs);
+RMVHL Vector &operator*=(Vector &lhs, float rhs);
 // inv scaling by division
-RTRTAPI Vector const operator/(Vector const &lhs, float rhs);
-RTRTAPI Vector &operator/=(Vector &lhs, float rhs);
-RTRTAPI float Dot(Vector const &lhs, Vector const &rhs);
-RTRTAPI float AbsDot(Vector const &lhs, Vector const &rhs);
-RTRTAPI Vector const Cross(Vector const &lhs, Vector const &rhs);
-RTRTAPI float LengthSquared(Vector const &v);
-RTRTAPI float Length(Vector const &v);
-RTRTAPI Vector &Normalize(Vector &v);
-RTRTAPI Vector const Normalized(Vector v);
+RMVHL Vector const operator/(Vector const &lhs, float rhs);
+RMVHL Vector &operator/=(Vector &lhs, float rhs);
+RMVHL float Dot(Vector const &lhs, Vector const &rhs);
+RMVHL float AbsDot(Vector const &lhs, Vector const &rhs);
+RMVHL Vector const Cross(Vector const &lhs, Vector const &rhs);
+RMVHL float LengthSquared(Vector const &v);
+RMVHL float Length(Vector const &v);
+RMVHL Vector &Normalize(Vector &v);
+RMVHL Vector const Normalized(Vector v);
+
+#undef RMVHL
+
 /*============================================================================*/
 /* OTHER HELPER FUNCTIONS                                                     */
 /*============================================================================*/
-
+__device__ __host__
 void CoordinateSystem(Vector const &v0, Vector &v1, Vector &v2);
 
 } // namespace rtrt

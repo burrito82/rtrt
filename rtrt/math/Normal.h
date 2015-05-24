@@ -62,29 +62,33 @@ struct RTRTAPI Normal : public Float4
     }
 };
 
-RTRTAPI Normal const operator-(Normal const &n);
+#define RMNHL __device__ __host__ __inline__ RTRTAPI
+
+RMNHL Normal const operator-(Normal const &n);
 
 // addition
-RTRTAPI Normal const operator+(Normal const &lhs, Normal const &rhs);
-RTRTAPI Normal &operator+=(Normal &lhs, Normal const &rhs);
+RMNHL Normal const operator+(Normal const &lhs, Normal const &rhs);
+RMNHL Normal &operator+=(Normal &lhs, Normal const &rhs);
 
 // subtraction
-RTRTAPI Normal const operator-(Normal const &lhs, Normal const &rhs);
-RTRTAPI Normal &operator-=(Normal &lhs, Normal const &rhs);
+RMNHL Normal const operator-(Normal const &lhs, Normal const &rhs);
+RMNHL Normal &operator-=(Normal &lhs, Normal const &rhs);
 
 // scaling
-RTRTAPI Vector const operator*(float lhs, Normal const &rhs);
-RTRTAPI Vector const operator*(Normal const &lhs, float rhs);
+RMNHL Vector const operator*(float lhs, Normal const &rhs);
+RMNHL Vector const operator*(Normal const &lhs, float rhs);
 
 // inv scaling by division
-RTRTAPI Vector const operator/(Normal const &lhs, float rhs);
-RTRTAPI float Dot(Normal const &lhs, Normal const &rhs);
-RTRTAPI float Dot(Vector const &lhs, Normal const &rhs);
-RTRTAPI float Dot(Normal const &lhs, Vector const &rhs);
-RTRTAPI float AbsDot(Normal const &lhs, Normal const &rhs);
-RTRTAPI float AbsDot(Vector const &lhs, Normal const &rhs);
-RTRTAPI float AbsDot(Normal const &lhs, Vector const &rhs);
-RTRTAPI Normal FaceForward(Normal const &n, Vector const &v);
+RMNHL Vector const operator/(Normal const &lhs, float rhs);
+RMNHL float Dot(Normal const &lhs, Normal const &rhs);
+RMNHL float Dot(Vector const &lhs, Normal const &rhs);
+RMNHL float Dot(Normal const &lhs, Vector const &rhs);
+RMNHL float AbsDot(Normal const &lhs, Normal const &rhs);
+RMNHL float AbsDot(Vector const &lhs, Normal const &rhs);
+RMNHL float AbsDot(Normal const &lhs, Vector const &rhs);
+RMNHL Normal FaceForward(Normal const &n, Vector const &v);
+
+#undef RMNHL
 
 } // namespace rtrt
 

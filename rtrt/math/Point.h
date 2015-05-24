@@ -36,20 +36,23 @@ struct RTRTAPI Point : public Float4
     }
 };
 
+#define RMPHL __device__ __host__ __inline__ RTRTAPI
 // add offset
-RTRTAPI Point const operator+(Point const &p, Vector const &v);
-RTRTAPI Point const operator+(Vector const &v, Point const &p);
-RTRTAPI Point &operator+=(Point &p, Vector const &v);
+RMPHL Point const operator+(Point const &p, Vector const &v);
+RMPHL Point const operator+(Vector const &v, Point const &p);
+RMPHL Point &operator+=(Point &p, Vector const &v);
 
 // sub offset
-RTRTAPI Point const operator-(Point const &p, Vector const &v);
-RTRTAPI Point const operator-(Vector const &v, Point const &p);
-RTRTAPI Point &operator-=(Point &p, Vector const &v);
+RMPHL Point const operator-(Point const &p, Vector const &v);
+RMPHL Point const operator-(Vector const &v, Point const &p);
+RMPHL Point &operator-=(Point &p, Vector const &v);
 
 // get offset
-RTRTAPI Vector const operator-(Point const &from, Point const &to);
-RTRTAPI float DistanceSquared(Point const &lhs, Point const &rhs);
-RTRTAPI float Distance(Point const &lhs, Point const &rhs);
+RMPHL Vector const operator-(Point const &from, Point const &to);
+RMPHL float DistanceSquared(Point const &lhs, Point const &rhs);
+RMPHL float Distance(Point const &lhs, Point const &rhs);
+
+#undef RMPHL
 
 } // namespace rtrt
 
