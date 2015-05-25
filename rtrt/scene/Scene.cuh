@@ -110,7 +110,9 @@ private:
             {
                 oHitPoint.m_fDistance = fDistance;
                 oHitPoint.p = rRay.origin + fDistance * rRay.direction;
-                oHitPoint.n = thrust::get<0>(GetTriangleNormals(iTriangleIndex)); // TODO
+                oHitPoint.n = thrust::get<0>(GetTriangleNormals(iTriangleIndex))
+                    + thrust::get<1>(GetTriangleNormals(iTriangleIndex))
+                    + thrust::get<2>(GetTriangleNormals(iTriangleIndex));
             }
         }
 
@@ -152,7 +154,9 @@ private:
                         {
                             oHitPoint.m_fDistance = fDistance;
                             oHitPoint.p = rRay.origin + fDistance * rRay.direction;
-                            oHitPoint.n = thrust::get<0>(GetTriangleNormals(iTriangleIndex)); // TODO
+                            oHitPoint.n = thrust::get<0>(GetTriangleNormals(iTriangleIndex))
+                                + thrust::get<1>(GetTriangleNormals(iTriangleIndex))
+                                + thrust::get<2>(GetTriangleNormals(iTriangleIndex));
                         }
                     }
 

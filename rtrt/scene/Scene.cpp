@@ -135,35 +135,35 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
     oCpuScene.m_pNormals = m_vecNormals.data();
     oCpuScene.m_pBvhs = m_oBvhManager.data();
 
-    rtrt::VectorMemory<Ray> vecRays{};
-    rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecHitPoints{};
+    static rtrt::VectorMemory<Ray> vecRays{};
+    static rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecHitPoints{};
     float z = 10;
     bool bDraw = (iWidth < 160);
 
-    float fCameraExtentX = 4.0f;
-    float fCameraExtentY = fCameraExtentX / iWidth * iHeight;
-    for (int yStep = 0; yStep < iHeight; ++yStep)
+    if (vecRays.empty())
     {
-        for (int xStep = 0; xStep < iWidth; ++xStep)
+        float fCameraExtentX = 4.0f;
+        float fCameraExtentY = fCameraExtentX / iWidth * iHeight;
+        for (int yStep = 0; yStep < iHeight; ++yStep)
         {
-            /*vecRays.push_back(Ray{Point{
-                fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth) - 0.5f),
-                -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight) - 0.5f),
-                z},
-                Normal{0.0f, 0.0f, -1.0f}});*/
-            vecRays.push_back(Ray{Point{
-                0.0f,
-                0.0f,
-                z},
-                Normal{
+            for (int xStep = 0; xStep < iWidth; ++xStep)
+            {
+                /*vecRays.push_back(Ray{Point{
                     fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth) - 0.5f),
                     -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight) - 0.5f),
-                    -2.0f}});
+                    z},
+                    Normal{0.0f, 0.0f, -1.0f}});*/
+                vecRays.push_back(Ray{Point{
+                    0.0f,
+                    0.0f,
+                    z},
+                    Normal{
+                        fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth)-0.5f),
+                        -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight)-0.5f),
+                        -2.0f}});
+            }
         }
     }
-    cuda::KernelCheck();
-    vecRays.Synchronize();
-    cuda::KernelCheck();
 
     if (eHardware == CPU)
     {
@@ -175,36 +175,6 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
             << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
             << vecRays.size() << " rays,\t"
             << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
-
-        // DRAW
-        if (bDraw)
-        {
-            int iRay = 0;
-            for (int y = 0; y < iHeight; ++y)
-            {
-                std::cout << '|';
-                for (int x = 0; x < iWidth; ++x)
-                {
-                    cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
-                    if (hitpoint)
-                    {
-                        std::cout << "#";
-                    }
-                    else
-                    {
-                        std::cout << " ";
-                    }
-                }
-                std::cout << "|\n";
-            }
-
-            std::cout << 'x';
-            for (int x = 0; x < iWidth; ++x)
-            {
-                std::cout << '=';
-            }
-            std::cout << "x\n";
-        }
     }
 
     if (eHardware == GPU)
@@ -220,32 +190,33 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
             << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
             << vecRays.size() << " rays,\t"
             << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
+    }
 
-        // DRAW
-        if (bDraw)
+    // DRAW
+    if (bDraw)
+    {
+        int iRay = 0;
+        for (int y = 0; y < iHeight; ++y)
         {
-            int iRay = 0;
-            for (int y = 0; y < iHeight; ++y)
+            std::cout << '|';
+            for (int x = 0; x < iWidth; ++x)
             {
-                std::cout << '|';
-                for (int x = 0; x < iWidth; ++x)
+                cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
+                if (hitpoint)
                 {
-                    cuda::HitPoint const &hitpoint = vecHitPoints[iRay++];
-                    if (hitpoint)
-                    {
-                        std::cout << "#";
-                    }
-                    else
-                    {
-                        std::cout << " ";
-                    }
+                    std::cout << "#";
                 }
-                std::cout << "|\n";
+                else
+                {
+                    std::cout << " ";
+                }
             }
+            std::cout << "|\n";
         }
     }
 
-    std::vector<unsigned char> vecResult{};
+    static std::vector<unsigned char> vecResult{};
+    vecResult.resize(vecHitPoints.size());
     for (auto const &hit : vecHitPoints)
     {
         vecResult.insert(std::end(vecResult),
