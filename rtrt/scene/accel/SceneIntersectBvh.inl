@@ -76,10 +76,7 @@ HitPoint Scene::IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPo
                     if (fDistance > 0.0f && fDistance < oHitPoint.m_fDistance)
                     {
                         oHitPoint.m_fDistance = fDistance;
-                        oHitPoint.p = rRay.origin + fDistance * rRay.direction;
-                        oHitPoint.n = thrust::get<0>(GetTriangleNormals(iTriangleIndex))
-                            + thrust::get<1>(GetTriangleNormals(iTriangleIndex))
-                            + thrust::get<2>(GetTriangleNormals(iTriangleIndex));
+                        oHitPoint.m_iTriangleIndex = iTriangleIndex;
                     }
                 }
 

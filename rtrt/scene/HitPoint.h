@@ -3,8 +3,12 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
+#include "BarycentricCoords.h"
+
+#include "../cuda/Defines.h"
 #include "../math/Normal.h"
 #include "../math/Point.h"
+
 #include <limits>
 #include <cfloat>
 /*============================================================================*/
@@ -23,28 +27,28 @@ namespace cuda
 /*============================================================================*/
 struct HitPoint
 {
-    __device__ __host__
-    HitPoint():
+    RTRTDH HitPoint():
         m_fDistance{inf()},
+        m_iTriangleIndex{0u},
         p{},
         n{1.0f, 0.0f, 0.0f}
     {
 
     }
 
-    __device__ __host__
-    operator bool() const
+    RTRTDHL operator bool() const
     {
         return (m_fDistance > 0.0f && m_fDistance < inf());
     }
-
-    __device__ __host__
-    static float inf()
+    
+    RTRTDHL static float inf()
     {
         return 1.0e+30f;
     }
 
     float m_fDistance;
+    size_t m_iTriangleIndex;
+    BarycentricCoords m_oBaryCoord;
     Point p;
     Normal n;
 };

@@ -102,8 +102,6 @@ RTRTDHLAPI float Length(Vector const &v);
 RTRTDHLAPI Vector &Normalize(Vector &v);
 RTRTDHLAPI Vector const Normalized(Vector v);
 
-#undef RMVHL
-
 /*============================================================================*/
 /* OTHER HELPER FUNCTIONS                                                     */
 /*============================================================================*/

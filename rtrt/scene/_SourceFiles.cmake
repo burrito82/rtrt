@@ -5,6 +5,7 @@ set( RelativeSourceGroup "source\\scene" )
 set( SubDirs accel)
 
 set( DirFiles
+    BarycentricCoords.h
     BoundingBox.h
     HitPoint.h
     Intersection.h

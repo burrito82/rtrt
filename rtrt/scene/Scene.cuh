@@ -31,12 +31,25 @@ struct Scene
 {
     RTRTDHL HitPoint Intersect(Ray const &rRay) const
     {
-        return IntersectBvh(rRay);
+        using thrust::get;
+
+        auto oHitPoint = IntersectBvh(rRay);
+        if (oHitPoint)
+        {
+            auto const oTrianglePoints = GetTrianglePoints(oHitPoint.m_iTriangleIndex);
+            auto const oTriangleNormals = GetTriangleNormals(oHitPoint.m_iTriangleIndex);
+            oHitPoint.p = rRay.origin + oHitPoint.m_fDistance * rRay.direction;
+            oHitPoint.m_oBaryCoord = BarycentricCoords{oTrianglePoints, oHitPoint.p};
+            oHitPoint.n = oHitPoint.m_oBaryCoord.ToNormal(oTriangleNormals);
+            /*oHitPoint.n = Normal
+            {
+                oHitPoint.m_oBaryCoord.x * get<0>(oTriangleNormals)
+                + oHitPoint.m_oBaryCoord.y * get<1>(oTriangleNormals)
+                + oHitPoint.m_oBaryCoord.z * get<2>(oTriangleNormals)
+            };*/
+        }
+        return oHitPoint;
     }
-
-    RTRTDHL HitPoint IntersectLinear(Ray const &rRay) const;
-
-    RTRTDHL HitPoint IntersectBvh(Ray const &rRay) const;
     
     RTRTDHL TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
     {
@@ -65,8 +78,10 @@ struct Scene
     bvh::BvhNode *m_pBvhs;
 
 private:
+    RTRTDHL HitPoint IntersectLinear(Ray const &rRay) const;
     RTRTDHL HitPoint IntersectLinear(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const;
 
+    RTRTDHL HitPoint IntersectBvh(Ray const &rRay) const;
     RTRTDHL HitPoint IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const;
 };
 

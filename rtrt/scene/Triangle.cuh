@@ -5,6 +5,7 @@
 /* INCLUDES                                                                   */
 /*============================================================================*/
 #include "accel/BvhNode.h"
+#include "../cuda/Defines.h"
 #include "../math/Normal.h"
 #include "../math/Point.h"
 
