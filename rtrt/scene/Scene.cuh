@@ -5,6 +5,8 @@
 /* INCLUDES                                                                   */
 /*============================================================================*/
 #include "HitPoint.h"
+#include "Material.h"
+#include "PointLight.h"
 #include "Ray.cuh"
 #include "RayTriangleIntersection.cuh"
 #include "Triangle.cuh"
@@ -41,12 +43,6 @@ struct Scene
             oHitPoint.p = rRay.origin + oHitPoint.m_fDistance * rRay.direction;
             oHitPoint.m_oBaryCoord = BarycentricCoords{oTrianglePoints, oHitPoint.p};
             oHitPoint.n = oHitPoint.m_oBaryCoord.ToNormal(oTriangleNormals);
-            /*oHitPoint.n = Normal
-            {
-                oHitPoint.m_oBaryCoord.x * get<0>(oTriangleNormals)
-                + oHitPoint.m_oBaryCoord.y * get<1>(oTriangleNormals)
-                + oHitPoint.m_oBaryCoord.z * get<2>(oTriangleNormals)
-            };*/
         }
         return oHitPoint;
     }
@@ -76,6 +72,9 @@ struct Scene
     Point *m_pPoints;
     Normal *m_pNormals;
     bvh::BvhNode *m_pBvhs;
+
+    Material *m_pMaterials;
+    PointLight *m_pPointLights;
 
 private:
     RTRTDHL HitPoint IntersectLinear(Ray const &rRay) const;

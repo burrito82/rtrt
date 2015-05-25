@@ -5,6 +5,8 @@
 /* INCLUDES                                                                   */
 /*============================================================================*/
 #include "BoundingBox.h"
+#include "Material.h"
+#include "PointLight.h"
 #include "Triangle.cuh"
 #include "TriangleObject.h"
 #include "accel/BvhManager.h"
@@ -45,6 +47,8 @@ public:
     Scene();
 
     void AddObject(TriangleObject const &rTriangleObject);
+    void AddPointLight(PointLight const &rPointLight);
+
     void Synchronize();
 
     void Intersect(VectorMemory<Ray> const &rVecRays, 
@@ -52,7 +56,6 @@ public:
                    Hardware eHardware = GPU);
 
     std::vector<unsigned char> Test(int iWidth = 150, int iHeight = 80, Hardware eHardware = GPU);
-    void Raytrace();
 
     cuda::TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
     {
@@ -94,6 +97,9 @@ private:
     VectorMemory<Point> m_vecPoints;
     VectorMemory<Normal> m_vecNormals;
     bvh::BvhManager m_oBvhManager;
+
+    VectorMemory<Material> m_vecMaterials;
+    VectorMemory<PointLight> m_vecPointLights;
 };
 
 } // namespace rtrt

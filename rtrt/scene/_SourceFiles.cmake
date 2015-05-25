@@ -7,10 +7,13 @@ set( SubDirs accel)
 set( DirFiles
     BarycentricCoords.h
     BoundingBox.h
+    Color.h
     HitPoint.h
     Intersection.h
     LoaderObj.cpp
     LoaderObj.h
+    Material.h
+    PointLight.h
     Ray.cuh
     RayTriangleIntersection.cuh
     Scene.cpp

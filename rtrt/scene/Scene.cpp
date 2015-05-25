@@ -74,7 +74,9 @@ Scene::Scene():
     m_vecTriangleObjects{},
     m_vecPoints{},
     m_vecNormals{},
-    m_oBvhManager{this}
+    m_oBvhManager{this},
+    m_vecMaterials{},
+    m_vecPointLights{}
 {
 
 }
@@ -110,17 +112,26 @@ void Scene::AddObject(TriangleObject const &rTriangleObject)
     m_vecTriangleObjects.push_back(oTriangleObjDesc);
 }
 
+void Scene::AddPointLight(PointLight const &rPointLight)
+{
+    m_vecPointLights.push_back(rPointLight);
+}
+
 void Scene::Synchronize()
 {
     m_vecPoints.Synchronize();
     m_vecNormals.Synchronize();
     m_vecTriangleObjects.Synchronize();
     m_oBvhManager.Synchronize();
+    m_vecMaterials.Synchronize();
+    m_vecPointLights.Synchronize();
     m_pSceneCuda->Get().m_pPoints = m_vecPoints.CudaPointer();
     m_pSceneCuda->Get().m_pNormals = m_vecNormals.CudaPointer();
     m_pSceneCuda->Get().m_pTriangleObjects = m_vecTriangleObjects.CudaPointer();
     m_pSceneCuda->Get().m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
     m_pSceneCuda->Get().m_pBvhs = m_oBvhManager.CudaPointer();
+    m_pSceneCuda->Get().m_pMaterials = m_vecMaterials.CudaPointer();
+    m_pSceneCuda->Get().m_pPointLights = m_vecPointLights.CudaPointer();
     m_pSceneCuda->Synchronize();
 }
 
@@ -214,13 +225,34 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
 
     static std::vector<unsigned char> vecResult{};
     vecResult.resize(vecHitPoints.size() * 4);
+    std::fill(std::begin(vecResult), std::end(vecResult), 0);
+#pragma omp parallel for
     for (auto i = 0; i < vecHitPoints.size(); ++i)
     {
         auto const &hit = vecHitPoints[i];
-        vecResult[4 * i] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[0]))));
-        vecResult[4 * i + 1] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[1]))));
-        vecResult[4 * i + 2] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[2]))));
+        //vecResult[4 * i] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[0]))));
+        //vecResult[4 * i + 1] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[1]))));
+        //vecResult[4 * i + 2] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[2]))));
         vecResult[4 * i + 3] = 0xff;
+    }
+    for (auto const &rLightSource : m_vecPointLights)
+    {
+#pragma omp parallel for
+        for (auto i = 0; i < vecHitPoints.size(); ++i)
+        {
+            auto const &eye = vecRays[i];
+            auto const &hit = vecHitPoints[i];
+            if (hit)
+            {
+                float const *color = &rLightSource.color.r;
+                for (auto x = 4 * i; x < 4 * i + 2; ++x)
+                {
+                    vecResult[x] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>(static_cast<float>(
+                        std::max(0.0f, static_cast<float>(vecResult[x])
+                        + color[x % 4] * Dot(hit.n, Normalized(rLightSource.p - hit.p) / Length(rLightSource.p - hit.p))))))));
+                }
+            }
+        }
     }
     return vecResult;
 }
@@ -254,11 +286,6 @@ void Scene::Intersect(VectorMemory<Ray> const &rVecRays,
             rVecHitPoints[i] = oCpuScene.Intersect(rVecRays[i]);
         }
     }
-}
-
-void Scene::Raytrace()
-{
-
 }
 
 } // namespace rtrt
