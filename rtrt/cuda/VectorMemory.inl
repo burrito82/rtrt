@@ -349,6 +349,13 @@ void VectorMemory<T, WRITEDIRECTION>::Gpu2Cpu()
     Synchronizer<GPU_TO_CPU>::Synchronize(m_vecCpu.data(), m_pCuda.get(), size());
 }
 
+template<typename T, typename ContainerIterator>
+void Cpu2Gpu(ContainerIterator itSrcBegin, ContainerIterator itSrcEnd, T *pCuda)
+{
+    auto iDist = std::distance(itSrcBegin, itSrcEnd);
+    Synchronizer<CPU_TO_GPU>::Synchronize(&*itSrcBegin, pCuda, iDist);
+}
+
 } // namespace rtrt
 
 #endif // ! RTRT_CUDA_VECTORMEMORY_INL

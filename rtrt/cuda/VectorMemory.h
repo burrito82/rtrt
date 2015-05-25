@@ -104,6 +104,9 @@ private:
     std::unique_ptr<T, CudaDeleter<T>> m_pCuda;
 };
 
+template<typename T, typename ContainerIterator>
+void Cpu2Gpu(ContainerIterator itSrcBegin, ContainerIterator itSrcEnd, T *pCuda);
+
 } // namespace rtrt
 
 #include "VectorMemory.inl"
