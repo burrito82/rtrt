@@ -9,6 +9,7 @@ set( DirFiles
     BvhManager.cpp
     BvhManager.h
     BvhNode.h
+    SceneIntersectBvh.inl
 
     _SourceFiles.cmake
 )

@@ -22,35 +22,30 @@ namespace rtrt
 
 struct RTRTAPI Vector : public Float4
 {
-    __device__ __host__
-    Vector(float x_ = 0.0f, float y_ = 0.0f, float z_ = 0.0f, float w_ = 0.0f):
+    RTRTDH Vector(float x_ = 0.0f, float y_ = 0.0f, float z_ = 0.0f, float w_ = 0.0f):
         Float4{x_, y_, z_, w_}
     {
     }
 
-    __device__ __host__
-    explicit Vector(Float4 const &f4):
+    RTRTDHL explicit Vector(Float4 const &f4):
         Float4{f4}
     {
 
     }
 
-    __device__ __host__
-    float Dot(Vector const &rhs) const
+    RTRTDHL float Dot(Vector const &rhs) const
     {
         return x * rhs.x
             + y * rhs.y
             + z * rhs.z;
     }
 
-    __device__ __host__
-    float AbsDot(Vector const &rhs) const
+    RTRTDHL float AbsDot(Vector const &rhs) const
     {
         return std::abs(this->Dot(rhs));
     }
 
-    __device__ __host__
-    Vector const Cross(Vector const &rhs) const
+    RTRTDHL Vector const Cross(Vector const &rhs) const
     {
         return Vector
         {
@@ -60,20 +55,17 @@ struct RTRTAPI Vector : public Float4
         };
     }
 
-    __device__ __host__
-    float LengthSquared() const
+    RTRTDHL float LengthSquared() const
     {
         return this->Dot(*this);
     }
 
-    __device__ __host__
-    float Length() const
+    RTRTDHL float Length() const
     {
         return std::sqrt(this->LengthSquared());
     }
 
-    __device__ __host__
-    Vector &Normalize()
+    RTRTDHL Vector &Normalize()
     {
         float const fLength = Length();
         x /= fLength;
@@ -82,36 +74,33 @@ struct RTRTAPI Vector : public Float4
         return *this;
     }
 
-    __device__ __host__
-    Vector const Normalized() const
+    RTRTDHL Vector const Normalized() const
     {
         return Vector{*this}.Normalize();
     }
 };
 
-#define RMVHL __device__ __host__ __inline__ RTRTAPI
-
-RMVHL Vector const operator-(Vector const &n);
+RTRTDHLAPI Vector const operator-(Vector const &n);
 // addition
-RMVHL Vector const operator+(Vector const &lhs, Vector const &rhs);
-RMVHL Vector &operator+=(Vector &lhs, Vector const &rhs);
+RTRTDHLAPI Vector const operator+(Vector const &lhs, Vector const &rhs);
+RTRTDHLAPI Vector &operator+=(Vector &lhs, Vector const &rhs);
 // subtraction
-RMVHL Vector const operator-(Vector const &lhs, Vector const &rhs);
-RMVHL Vector &operator-=(Vector &lhs, Vector const &rhs);
+RTRTDHLAPI Vector const operator-(Vector const &lhs, Vector const &rhs);
+RTRTDHLAPI Vector &operator-=(Vector &lhs, Vector const &rhs);
 // scaling
-RMVHL Vector const operator*(float lhs, Vector const &rhs);
-RMVHL Vector const operator*(Vector const &lhs, float rhs);
-RMVHL Vector &operator*=(Vector &lhs, float rhs);
+RTRTDHLAPI Vector const operator*(float lhs, Vector const &rhs);
+RTRTDHLAPI Vector const operator*(Vector const &lhs, float rhs);
+RTRTDHLAPI Vector &operator*=(Vector &lhs, float rhs);
 // inv scaling by division
-RMVHL Vector const operator/(Vector const &lhs, float rhs);
-RMVHL Vector &operator/=(Vector &lhs, float rhs);
-RMVHL float Dot(Vector const &lhs, Vector const &rhs);
-RMVHL float AbsDot(Vector const &lhs, Vector const &rhs);
-RMVHL Vector const Cross(Vector const &lhs, Vector const &rhs);
-RMVHL float LengthSquared(Vector const &v);
-RMVHL float Length(Vector const &v);
-RMVHL Vector &Normalize(Vector &v);
-RMVHL Vector const Normalized(Vector v);
+RTRTDHLAPI Vector const operator/(Vector const &lhs, float rhs);
+RTRTDHLAPI Vector &operator/=(Vector &lhs, float rhs);
+RTRTDHLAPI float Dot(Vector const &lhs, Vector const &rhs);
+RTRTDHLAPI float AbsDot(Vector const &lhs, Vector const &rhs);
+RTRTDHLAPI Vector const Cross(Vector const &lhs, Vector const &rhs);
+RTRTDHLAPI float LengthSquared(Vector const &v);
+RTRTDHLAPI float Length(Vector const &v);
+RTRTDHLAPI Vector &Normalize(Vector &v);
+RTRTDHLAPI Vector const Normalized(Vector v);
 
 #undef RMVHL
 

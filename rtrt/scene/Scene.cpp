@@ -142,25 +142,22 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
 
     if (vecRays.empty())
     {
+        vecRays.resize(iWidth * iHeight);
         float fCameraExtentX = 4.0f;
         float fCameraExtentY = fCameraExtentX / iWidth * iHeight;
         for (int yStep = 0; yStep < iHeight; ++yStep)
         {
+#pragma omp parallel for
             for (int xStep = 0; xStep < iWidth; ++xStep)
             {
-                /*vecRays.push_back(Ray{Point{
-                    fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth) - 0.5f),
-                    -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight) - 0.5f),
-                    z},
-                    Normal{0.0f, 0.0f, -1.0f}});*/
-                vecRays.push_back(Ray{Point{
+                vecRays[xStep + yStep * iWidth] = Ray{Point{
                     0.0f,
                     0.0f,
                     z},
                     Normal{
                         fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth)-0.5f),
                         -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight)-0.5f),
-                        -2.0f}});
+                        -2.0f}};
             }
         }
     }

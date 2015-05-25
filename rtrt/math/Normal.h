@@ -22,38 +22,32 @@ namespace rtrt
 
 struct RTRTAPI Normal : public Float4
 {
-    __device__ __host__
-    Normal()
+    RTRTDH Normal()
     {
         x = y = z = w = -1.0f;
     }
-    __device__ __host__
-    Normal(float x_, float y_, float z_):
+    RTRTDH Normal(float x_, float y_, float z_):
         Float4{x_, y_, z_, 0.0f}
     {
         Normalize();
     }
-    __device__ __host__
-    explicit Normal(Vector const &v):
+    RTRTDH explicit Normal(Vector const &v):
         Float4{v.x, v.y, v.z, 0.0f}
     {
         Normalize();
     }
-    __device__ __host__
-    explicit Normal(Float4 const &f4):
+    RTRTDH explicit Normal(Float4 const &f4):
         Float4{f4}
     {
 
     }
 
-    __device__ __host__
-    explicit operator Vector() const
+    RTRTDHL explicit operator Vector() const
     {
         return Vector{x, y, z};
     }
 
-    __device__ __host__
-    void Normalize()
+    RTRTDHL void Normalize()
     {
         float fLength = std::sqrt(x * x + y * y + z * z);
         x /= fLength;
@@ -62,33 +56,29 @@ struct RTRTAPI Normal : public Float4
     }
 };
 
-#define RMNHL __device__ __host__ __inline__ RTRTAPI
-
-RMNHL Normal const operator-(Normal const &n);
+RTRTDHLAPI Normal const operator-(Normal const &n);
 
 // addition
-RMNHL Normal const operator+(Normal const &lhs, Normal const &rhs);
-RMNHL Normal &operator+=(Normal &lhs, Normal const &rhs);
+RTRTDHLAPI Normal const operator+(Normal const &lhs, Normal const &rhs);
+RTRTDHLAPI Normal &operator+=(Normal &lhs, Normal const &rhs);
 
 // subtraction
-RMNHL Normal const operator-(Normal const &lhs, Normal const &rhs);
-RMNHL Normal &operator-=(Normal &lhs, Normal const &rhs);
+RTRTDHLAPI Normal const operator-(Normal const &lhs, Normal const &rhs);
+RTRTDHLAPI Normal &operator-=(Normal &lhs, Normal const &rhs);
 
 // scaling
-RMNHL Vector const operator*(float lhs, Normal const &rhs);
-RMNHL Vector const operator*(Normal const &lhs, float rhs);
+RTRTDHLAPI Vector const operator*(float lhs, Normal const &rhs);
+RTRTDHLAPI Vector const operator*(Normal const &lhs, float rhs);
 
 // inv scaling by division
-RMNHL Vector const operator/(Normal const &lhs, float rhs);
-RMNHL float Dot(Normal const &lhs, Normal const &rhs);
-RMNHL float Dot(Vector const &lhs, Normal const &rhs);
-RMNHL float Dot(Normal const &lhs, Vector const &rhs);
-RMNHL float AbsDot(Normal const &lhs, Normal const &rhs);
-RMNHL float AbsDot(Vector const &lhs, Normal const &rhs);
-RMNHL float AbsDot(Normal const &lhs, Vector const &rhs);
-RMNHL Normal FaceForward(Normal const &n, Vector const &v);
-
-#undef RMNHL
+RTRTDHLAPI Vector const operator/(Normal const &lhs, float rhs);
+RTRTDHLAPI float Dot(Normal const &lhs, Normal const &rhs);
+RTRTDHLAPI float Dot(Vector const &lhs, Normal const &rhs);
+RTRTDHLAPI float Dot(Normal const &lhs, Vector const &rhs);
+RTRTDHLAPI float AbsDot(Normal const &lhs, Normal const &rhs);
+RTRTDHLAPI float AbsDot(Vector const &lhs, Normal const &rhs);
+RTRTDHLAPI float AbsDot(Normal const &lhs, Vector const &rhs);
+RTRTDHLAPI Normal FaceForward(Normal const &n, Vector const &v);
 
 } // namespace rtrt
 

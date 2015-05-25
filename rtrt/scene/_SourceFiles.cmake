@@ -7,7 +7,6 @@ set( SubDirs accel)
 set( DirFiles
     BoundingBox.h
     HitPoint.h
-    Intersection.cuh
     Intersection.h
     LoaderObj.cpp
     LoaderObj.h
@@ -17,6 +16,7 @@ set( DirFiles
     Scene.h
     Scene.cu
     Scene.cuh
+    SceneIntersectLinear.inl
     Triangle.cuh
     TriangleObject.cpp
     TriangleObject.h

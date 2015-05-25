@@ -22,37 +22,32 @@ namespace rtrt
 
 struct RTRTAPI Point : public Float4
 {
-    __device__ __host__
-    Point(float x_ = 0.0f, float y_ = 0.0f, float z_ = 0.0f):
+    RTRTDH Point(float x_ = 0.0f, float y_ = 0.0f, float z_ = 0.0f):
         Float4{x_, y_, z_, 1.0f}
     {
     }
 
-    __device__ __host__
-    explicit Point(Float4 const &f4):
+    RTRTDHL explicit Point(Float4 const &f4):
         Float4{f4}
     {
 
     }
 };
 
-#define RMPHL __device__ __host__ __inline__ RTRTAPI
 // add offset
-RMPHL Point const operator+(Point const &p, Vector const &v);
-RMPHL Point const operator+(Vector const &v, Point const &p);
-RMPHL Point &operator+=(Point &p, Vector const &v);
+RTRTDHLAPI Point const operator+(Point const &p, Vector const &v);
+RTRTDHLAPI Point const operator+(Vector const &v, Point const &p);
+RTRTDHLAPI Point &operator+=(Point &p, Vector const &v);
 
 // sub offset
-RMPHL Point const operator-(Point const &p, Vector const &v);
-RMPHL Point const operator-(Vector const &v, Point const &p);
-RMPHL Point &operator-=(Point &p, Vector const &v);
+RTRTDHLAPI Point const operator-(Point const &p, Vector const &v);
+RTRTDHLAPI Point const operator-(Vector const &v, Point const &p);
+RTRTDHLAPI Point &operator-=(Point &p, Vector const &v);
 
 // get offset
-RMPHL Vector const operator-(Point const &from, Point const &to);
-RMPHL float DistanceSquared(Point const &lhs, Point const &rhs);
-RMPHL float Distance(Point const &lhs, Point const &rhs);
-
-#undef RMPHL
+RTRTDHLAPI Vector const operator-(Point const &from, Point const &to);
+RTRTDHLAPI float DistanceSquared(Point const &lhs, Point const &rhs);
+RTRTDHLAPI float Distance(Point const &lhs, Point const &rhs);
 
 } // namespace rtrt
 

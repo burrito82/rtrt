@@ -6,6 +6,7 @@ set( SubDirs )
 
 set( DirFiles
     Assert.h
+    Defines.h
     Device.h
     Float4.cuh
     Math.h
