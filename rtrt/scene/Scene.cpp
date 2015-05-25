@@ -140,7 +140,7 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
     float z = 10;
     bool bDraw = (iWidth < 160);
 
-    if (vecRays.empty())
+    if (vecRays.size() != iWidth * iHeight)
     {
         vecRays.resize(iWidth * iHeight);
         float fCameraExtentX = 4.0f;
@@ -213,16 +213,14 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
     }
 
     static std::vector<unsigned char> vecResult{};
-    vecResult.resize(vecHitPoints.size());
-    for (auto const &hit : vecHitPoints)
+    vecResult.resize(vecHitPoints.size() * 4);
+    for (auto i = 0; i < vecHitPoints.size(); ++i)
     {
-        vecResult.insert(std::end(vecResult),
-        {
-            static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[0])))),
-            static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[1])))),
-            static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[2])))),
-            0xff
-        });
+        auto const &hit = vecHitPoints[i];
+        vecResult[4 * i] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[0]))));
+        vecResult[4 * i + 1] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[1]))));
+        vecResult[4 * i + 2] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[2]))));
+        vecResult[4 * i + 3] = 0xff;
     }
     return vecResult;
 }
@@ -253,7 +251,7 @@ void Scene::Intersect(VectorMemory<Ray> const &rVecRays,
 #pragma omp parallel for
         for (int i = 0; i < iRaysEnd; ++i)
         {
-            rVecHitPoints[i] = oCpuScene.IntersectBvh(rVecRays[i]);
+            rVecHitPoints[i] = oCpuScene.Intersect(rVecRays[i]);
         }
     }
 }
