@@ -40,7 +40,7 @@ __host__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iNum
     {
         size_t iNumberOfRaysBatch = min(iNumberOfRays - iBegin, 81920ull);
         unsigned int iThreadsPerBlock = iMaxThreads;
-        unsigned int iGridSize = min<unsigned int>((iNumberOfRaysBatch - 1u) / iThreadsPerBlock + 1u, iMaxBlocks);
+        unsigned int iGridSize = min<unsigned int>(static_cast<unsigned int>(iNumberOfRaysBatch - 1ull) / iThreadsPerBlock + 1u, iMaxBlocks);
         blockDim.x = iThreadsPerBlock;
         gridDim.x = iGridSize;
         Ray const *pRaysBatch = pRays + iBegin;

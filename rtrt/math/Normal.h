@@ -22,9 +22,9 @@ namespace rtrt
 
 struct RTRTAPI Normal : public Float4
 {
-    RTRTDH Normal()
+    RTRTDH Normal():
+        Normal{1.0f, 0.0f, 0.0f}
     {
-        x = y = z = w = -1.0f;
     }
     RTRTDH Normal(float x_, float y_, float z_):
         Float4{x_, y_, z_, 0.0f}

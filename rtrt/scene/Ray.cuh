@@ -4,9 +4,9 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
+#include "../cuda/Defines.h"
 #include "../math/Normal.h"
 #include "../math/Point.h"
-#include "../LibraryConfig.h"
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -22,8 +22,8 @@ namespace rtrt
 
 struct RTRTAPI Ray
 {
-    Ray() = default;
-    Ray(Point const &o_, Normal const &d_):
+    RTRTDH Ray() = default;
+    RTRTDH Ray(Point const &o_, Normal const &d_):
         origin{o_},
         direction{d_}
     {

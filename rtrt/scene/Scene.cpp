@@ -114,9 +114,10 @@ size_t Scene::AddGeometry(TriangleGeometry const &rTriangleGeometry)
     return m_vecTriangleGeometryDesc.size() - 1u;
 }
 
-size_t Scene::AddObject(TriangleObject const &rTriangleObject)
+size_t Scene::AddObject(TriangleObject oTriangleObject)
 {
-    m_vecTriangleObjects.push_back(rTriangleObject);
+    oTriangleObject.m_matInvTransformation = oTriangleObject.m_matTransformation.Inverted();
+    m_vecTriangleObjects.push_back(oTriangleObject);
     return m_vecTriangleObjects.size() - 1u;
 }
 
@@ -150,19 +151,10 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
 {
     cuda::TypeVerifier::VerifySize();
     cuda::KernelCheck();
-    cuda::Scene oCpuScene{};
-    oCpuScene.m_pTriangleGeometryDesc = m_vecTriangleGeometryDesc.data();
-    oCpuScene.m_pPoints = m_vecPoints.data();
-    oCpuScene.m_pNormals = m_vecNormals.data();
-    oCpuScene.m_pBvhs = m_oBvhManager.data();
-    oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
-    oCpuScene.m_pTriangleObjects = m_vecTriangleObjects.CudaPointer();
-    oCpuScene.m_pMaterials = m_vecMaterials.CudaPointer();
-    oCpuScene.m_pPointLights = m_vecPointLights.CudaPointer();
 
     static rtrt::VectorMemory<Ray> vecRays{};
     static rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecHitPoints{};
-    float z = 10;
+    float z = 0.0f;
     bool bDraw = (iWidth < 160);
 
     if (vecRays.size() != iWidth * iHeight)
@@ -175,14 +167,34 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
 #pragma omp parallel for
             for (int xStep = 0; xStep < iWidth; ++xStep)
             {
-                vecRays[xStep + yStep * iWidth] = Ray{Point{
-                    0.0f,
-                    0.0f,
-                    z},
-                    Normal{
+                /*vecRays[xStep + yStep * iWidth] = Ray{
+                    Point
+                    {
+                        fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth) - 0.5f),
+                        -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight) - 0.5f),
+                        z
+                    },
+                    Normal
+                    {
+                        0.0f,
+                        0.0f,
+                        -1.0f
+                    }
+                };*/
+                vecRays[xStep + yStep * iWidth] = Ray{
+                    Point
+                    {
+                        0.0f,
+                        0.0f,
+                        z
+                    },
+                    Normal
+                    {
                         fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth)-0.5f),
                         -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight)-0.5f),
-                        -2.0f}};
+                        -2.0f
+                    }
+                };
             }
         }
     }
@@ -243,10 +255,6 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
 #pragma omp parallel for
     for (auto i = 0; i < vecHitPoints.size(); ++i)
     {
-        auto const &hit = vecHitPoints[i];
-        //vecResult[4 * i] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[0]))));
-        //vecResult[4 * i + 1] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[1]))));
-        //vecResult[4 * i + 2] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>((255.0f - hit.m_fDistance) * hit.n[2]))));
         vecResult[4 * i + 3] = 0xff;
     }
     for (auto const &rLightSource : m_vecPointLights)
@@ -258,10 +266,15 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
             auto const &hit = vecHitPoints[i];
             if (hit)
             {
-                float const *color = &rLightSource.color.r;
-                for (auto x = 4 * i; x < 4 * i + 2; ++x)
+                float color[] = {
+                    rLightSource.color.r,
+                    rLightSource.color.g,
+                    rLightSource.color.b,
+                    rLightSource.color.a,
+                };
+                for (auto x = 4 * i; x < 4 * i + 3; ++x)
                 {
-                    vecResult[x] = static_cast<unsigned char>(std::min(0xff, std::max<int>(0, static_cast<int>(static_cast<float>(
+                    vecResult[x] = static_cast<unsigned char>(0xff & std::min(0xff, std::max<int>(0, static_cast<int>(static_cast<float>(
                         std::max(0.0f, static_cast<float>(vecResult[x])
                         + color[x % 4] * Dot(hit.n, Normalized(rLightSource.p - hit.p) / Length(rLightSource.p - hit.p))))))));
                 }
@@ -287,11 +300,14 @@ void Scene::Intersect(VectorMemory<Ray> const &rVecRays,
     else
     {
         cuda::Scene oCpuScene{};
-        oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleGeometryDesc.size();
         oCpuScene.m_pTriangleGeometryDesc = m_vecTriangleGeometryDesc.data();
         oCpuScene.m_pPoints = m_vecPoints.data();
         oCpuScene.m_pNormals = m_vecNormals.data();
         oCpuScene.m_pBvhs = m_oBvhManager.data();
+        oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
+        oCpuScene.m_pTriangleObjects = m_vecTriangleObjects.data();
+        oCpuScene.m_pMaterials = m_vecMaterials.data();
+        oCpuScene.m_pPointLights = m_vecPointLights.data();
 
         int iRaysEnd = static_cast<int>(rVecRays.size());
 #pragma omp parallel for

@@ -47,7 +47,13 @@ __device__ __host__ __inline__
 HitPoint Scene::IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const
 {
     HitPoint oHitPoint{rHitPointBefore};
-    auto iGeometryIndex = m_pTriangleObjects[iTriangleObjectIndex].m_iTriangleGeometry;
+    auto const &rTriangleObject = m_pTriangleObjects[iTriangleObjectIndex];
+    Ray const oRay
+    {
+        Point{rTriangleObject.m_matInvTransformation * rRay.origin},
+        Normal{rTriangleObject.m_matInvTransformation * rRay.direction}
+    };
+    auto iGeometryIndex = m_pTriangleObjects[rTriangleObject.m_iTriangleGeometry].m_iTriangleGeometry;
     bvh::BvhNode const * const pRoot = &m_pBvhs[m_pTriangleGeometryDesc[iGeometryIndex].m_iBvhStart];
 
     int aiTraversalStack[64];
@@ -64,7 +70,7 @@ HitPoint Scene::IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPo
         fMinDist = -1.0e35f;
         fMaxDist = oHitPoint.m_fDistance;
 
-        if (bvh::RayBoxIntersection(rRay, pCurrentNode->m_oBoundingBox, fMinDist, fMaxDist))
+        if (bvh::RayBoxIntersection(oRay, pCurrentNode->m_oBoundingBox, fMinDist, fMaxDist))
         {
             if (pCurrentNode->m_bIsLeaf)
             {
@@ -73,11 +79,12 @@ HitPoint Scene::IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPo
 
                 for (size_t iTriangleIndex = iBegin; iTriangleIndex < iEnd; ++iTriangleIndex)
                 {
-                    float fDistance = IntersectTriangleWoop(rRay, GetTrianglePoints(iTriangleIndex));
+                    float fDistance = IntersectTriangleWoop(oRay, GetTrianglePoints(iTriangleIndex));
                     if (fDistance > 0.0f && fDistance < oHitPoint.m_fDistance)
                     {
                         oHitPoint.m_fDistance = fDistance;
                         oHitPoint.m_iTriangleIndex = iTriangleIndex;
+                        oHitPoint.m_iObjectIndex = iTriangleObjectIndex;
                     }
                 }
 
@@ -91,8 +98,8 @@ HitPoint Scene::IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPo
                 bvh::BvhNode const *pRight = &pRoot[iRight];
                 float fLeftMin = -1.0e35f, fLeftMax = oHitPoint.m_fDistance;
                 float fRightMin = -1.0e35f, fRightMax = oHitPoint.m_fDistance;
-                bool bLeftHit = bvh::RayBoxIntersection(rRay, pLeft->m_oBoundingBox, fLeftMin, fLeftMax);
-                bool bRightHit = bvh::RayBoxIntersection(rRay, pRight->m_oBoundingBox, fRightMin, fRightMax);
+                bool bLeftHit = bvh::RayBoxIntersection(oRay, pLeft->m_oBoundingBox, fLeftMin, fLeftMax);
+                bool bRightHit = bvh::RayBoxIntersection(oRay, pRight->m_oBoundingBox, fRightMin, fRightMax);
 
                 if (bLeftHit && bRightHit)
                 {

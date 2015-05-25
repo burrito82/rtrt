@@ -119,6 +119,18 @@ struct Float4 : public float4
     }
 };
 
+template<typename F4>
+RTRTDHL F4 &Denormalize(F4 &f4)
+{
+    f4 /= f4.w;
+    return f4;
+}
+
+template<typename F4>
+RTRTDHL F4 Denormalized(F4 f4)
+{
+    return f4 /= f4.w;
+}
 
 RTRTDHL float4 const operator-(float4 const &f4)
 {

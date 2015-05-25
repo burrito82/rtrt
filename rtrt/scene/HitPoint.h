@@ -29,7 +29,8 @@ struct HitPoint
 {
     RTRTDH HitPoint():
         m_fDistance{inf()},
-        m_iTriangleIndex{0u},
+        m_iTriangleIndex{},
+        m_iObjectIndex{},
         p{},
         n{1.0f, 0.0f, 0.0f}
     {
@@ -48,6 +49,7 @@ struct HitPoint
 
     float m_fDistance;
     size_t m_iTriangleIndex;
+    size_t m_iObjectIndex;
     BarycentricCoords m_oBaryCoord;
     Point p;
     Normal n;

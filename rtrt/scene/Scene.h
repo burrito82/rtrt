@@ -49,7 +49,7 @@ public:
     Scene();
 
     size_t AddGeometry(TriangleGeometry const &rTriangleGeometry);
-    size_t AddObject(TriangleObject const &rTriangleObject);
+    size_t AddObject(TriangleObject oTriangleObject);
     size_t AddPointLight(PointLight const &rPointLight);
 
     void Synchronize();
@@ -80,9 +80,17 @@ public:
         };
     }
 
-    VectorMemory<cuda::TriangleGeometryDesc> const &GetTriangleGeometry() const
+    VectorMemory<cuda::TriangleGeometryDesc> const &GetTriangleGeometries() const
     {
         return m_vecTriangleGeometryDesc;
+    }
+    VectorMemory<TriangleObject> const &GetTriangleObjects() const
+    {
+        return m_vecTriangleObjects;
+    }
+    VectorMemory<TriangleObject> &GetTriangleObjects()
+    {
+        return m_vecTriangleObjects;
     }
     VectorMemory<Point> const &GetPoints() const
     {

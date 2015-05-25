@@ -7,7 +7,6 @@
 #include "../cuda/Defines.h"
 #include "../cuda/Float4.cuh"
 
-#include <array>
 #include <cmath>
 /*============================================================================*/
 /* DEFINES                                                                    */
@@ -27,7 +26,10 @@ struct RTRTAPI Matrix
     RTRTDH Matrix(Float4 const &v0, Float4 const &v1, Float4 const &v2, Float4 const &v3):
         m_aRows{}
     {
-        m_aRows = {v0, v1, v2, v3};
+        m_aRows[0] = v0; 
+        m_aRows[1] = v1; 
+        m_aRows[2] = v2; 
+        m_aRows[3] = v3;
     }
 
     RTRTDH Matrix(Float4 const &v0, Float4 const &v1, Float4 const &v2):
@@ -112,17 +114,20 @@ struct RTRTAPI Matrix
     }
 
     RTRTDHL Matrix const Transposed() const;
-    RTRTDH static Matrix const Scale(float fScale);
-    RTRTDH static Matrix const Translation(Float4 const &v);
-    RTRTDH static Matrix const Rotation(Float4 const &n, float fRadians);
+    RTRTDHL Matrix const Inverted() const;
+    RTRTDHL static Matrix const Scale(float fScale);
+    RTRTDHL static Matrix const Translation(Float4 const &v);
+    RTRTDHL static Matrix const Rotation(Float4 const &n, float fRadians);
+    RTRTDHL Matrix ExtractTranslation() const;
 
 private:
-    std::array<Float4, 4> m_aRows;
+    RTRTDHL Matrix const Inverted3x3() const;
+    Float4 m_aRows[4];
 };
 
 RTRTDHLAPI Float4 const operator*(Matrix const &mat, Float4 const &v);
-RTRTDHLAPI RTRTAPI Matrix const operator*(Matrix const &lhs, Matrix const &rhs);
-RTRTDHLAPI RTRTAPI Matrix const operator*(float f, Matrix const &mat);
+RTRTDHLAPI Matrix const operator*(Matrix const &lhs, Matrix const &rhs);
+RTRTDHLAPI Matrix const operator*(float f, Matrix const &mat);
 
 } // namespace rtrt
 

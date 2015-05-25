@@ -46,17 +46,23 @@ HitPoint Scene::IntersectLinear(Ray const &rRay, size_t iTriangleObjectIndex, Hi
     using thrust::get;
     HitPoint oHitPoint{rHitPointBefore};
     auto const &rTriangleObject = m_pTriangleObjects[iTriangleObjectIndex];
+    Ray const oRay
+    {
+        Point{rTriangleObject.m_matInvTransformation * rRay.origin},
+        Normal{rTriangleObject.m_matInvTransformation * rRay.direction}
+    };
     size_t const iTriangleBegin = m_pTriangleGeometryDesc[rTriangleObject.m_iTriangleGeometry].m_iStartIndex;
     size_t const iTriangleEnd = m_pTriangleGeometryDesc[rTriangleObject.m_iTriangleGeometry].m_iNumberOfTriangles + iTriangleBegin;
 
     for (size_t iTriangleIndex = iTriangleBegin; iTriangleIndex < iTriangleEnd; ++iTriangleIndex)
     {
-        float fDistance = IntersectTriangleWoop(rRay, GetTrianglePoints(iTriangleIndex));
+        float fDistance = IntersectTriangleWoop(oRay, GetTrianglePoints(iTriangleIndex));
         if (fDistance > 0.0f
             && fDistance < oHitPoint.m_fDistance)
         {
             oHitPoint.m_fDistance = fDistance;
             oHitPoint.m_iTriangleIndex = iTriangleIndex;
+            oHitPoint.m_iObjectIndex = iTriangleObjectIndex;
         }
     }
 

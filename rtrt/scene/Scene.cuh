@@ -42,9 +42,10 @@ struct Scene
         {
             auto const oTrianglePoints = GetTrianglePoints(oHitPoint.m_iTriangleIndex);
             auto const oTriangleNormals = GetTriangleNormals(oHitPoint.m_iTriangleIndex);
+            auto const &rTriangleObject = m_pTriangleObjects[oHitPoint.m_iObjectIndex];
             oHitPoint.p = rRay.origin + oHitPoint.m_fDistance * rRay.direction;
-            oHitPoint.m_oBaryCoord = BarycentricCoords{oTrianglePoints, oHitPoint.p};
-            oHitPoint.n = oHitPoint.m_oBaryCoord.ToNormal(oTriangleNormals);
+            oHitPoint.m_oBaryCoord = BarycentricCoords{oTrianglePoints, Point{rTriangleObject.m_matInvTransformation * oHitPoint.p}};
+            oHitPoint.n = Normal{rTriangleObject.m_matTransformation * oHitPoint.m_oBaryCoord.ToNormal(oTriangleNormals)};
         }
         return oHitPoint;
     }
