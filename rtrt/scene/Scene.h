@@ -7,7 +7,9 @@
 #include "BoundingBox.h"
 #include "Material.h"
 #include "PointLight.h"
-#include "Triangle.cuh"
+#include "Triangle.h"
+#include "TriangleGeometryDesc.h"
+#include "TriangleGeometry.h"
 #include "TriangleObject.h"
 #include "accel/BvhManager.h"
 #include "../cuda/VectorMemory.h"
@@ -46,8 +48,9 @@ public:
 
     Scene();
 
-    void AddObject(TriangleObject const &rTriangleObject);
-    void AddPointLight(PointLight const &rPointLight);
+    size_t AddGeometry(TriangleGeometry const &rTriangleGeometry);
+    size_t AddObject(TriangleObject const &rTriangleObject);
+    size_t AddPointLight(PointLight const &rPointLight);
 
     void Synchronize();
 
@@ -77,9 +80,9 @@ public:
         };
     }
 
-    VectorMemory<cuda::TriangleObjectDesc> const &GetTriangleObjects() const
+    VectorMemory<cuda::TriangleGeometryDesc> const &GetTriangleGeometry() const
     {
-        return m_vecTriangleObjects;
+        return m_vecTriangleGeometryDesc;
     }
     VectorMemory<Point> const &GetPoints() const
     {
@@ -93,11 +96,12 @@ public:
 private:
     std::shared_ptr<SceneCuda> m_pSceneCuda;
 
-    VectorMemory<cuda::TriangleObjectDesc> m_vecTriangleObjects;
+    VectorMemory<cuda::TriangleGeometryDesc> m_vecTriangleGeometryDesc;
     VectorMemory<Point> m_vecPoints;
     VectorMemory<Normal> m_vecNormals;
     bvh::BvhManager m_oBvhManager;
 
+    VectorMemory<TriangleObject> m_vecTriangleObjects;
     VectorMemory<Material> m_vecMaterials;
     VectorMemory<PointLight> m_vecPointLights;
 };

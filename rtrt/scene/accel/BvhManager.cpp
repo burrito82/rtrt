@@ -184,12 +184,12 @@ BvhManager::BvhManager(Scene *pScene):
 /*============================================================================*/
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
-std::vector<bvh::BvhBoundingBox> BvhManager::AddBvh(cuda::TriangleObjectDesc &rTriangleObjDesc)
+std::vector<bvh::BvhBoundingBox> BvhManager::AddBvh(cuda::TriangleGeometryDesc &rTriangleGeometryDesc)
 {
     std::vector<bvh::BvhBoundingBox> vecBoundingBoxes{};
-    vecBoundingBoxes.reserve(rTriangleObjDesc.m_iNumberOfTriangles);
-    auto iBegin = rTriangleObjDesc.m_iStartIndex;
-    auto iEnd = iBegin + rTriangleObjDesc.m_iNumberOfTriangles;
+    vecBoundingBoxes.reserve(rTriangleGeometryDesc.m_iNumberOfTriangles);
+    auto iBegin = rTriangleGeometryDesc.m_iStartIndex;
+    auto iEnd = iBegin + rTriangleGeometryDesc.m_iNumberOfTriangles;
     size_t iWithoutOffset = 0u;
     for (size_t iTriangle = iBegin; iTriangle != iEnd; ++iTriangle)
     {
@@ -218,7 +218,7 @@ std::vector<bvh::BvhBoundingBox> BvhManager::AddBvh(cuda::TriangleObjectDesc &rT
     };
     oBvhBuilding.Construct();
     auto vecBvhNodes = oBvhBuilding.Serialize();
-    rTriangleObjDesc.m_iBvhStart = m_vecBvh.size();
+    rTriangleGeometryDesc.m_iBvhStart = m_vecBvh.size();
     std::move(std::begin(vecBvhNodes), std::end(vecBvhNodes), std::back_inserter(m_vecBvh));
     return vecBoundingBoxes;
 }

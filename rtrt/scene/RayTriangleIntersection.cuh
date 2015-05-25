@@ -5,7 +5,7 @@
 /* INCLUDES                                                                   */
 /*============================================================================*/
 #include "Ray.cuh"
-#include "Triangle.cuh"
+#include "Triangle.h"
 #include "../math/Vector.h"
 
 #include <cuda.h>

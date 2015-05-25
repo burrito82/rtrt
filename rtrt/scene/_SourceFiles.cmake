@@ -21,8 +21,9 @@ set( DirFiles
     Scene.cu
     Scene.cuh
     SceneIntersectLinear.inl
-    Triangle.cuh
-    TriangleObject.cpp
+    Triangle.h
+    TriangleGeometry.h
+    TriangleGeometryDesc.h
     TriangleObject.h
 
     _SourceFiles.cmake

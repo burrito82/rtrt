@@ -7,7 +7,7 @@
 #include "HitPoint.h"
 #include "Ray.cuh"
 #include "RayTriangleIntersection.cuh"
-#include "Triangle.cuh"
+#include "Triangle.h"
 #include "accel/BvhBoundingBox.h"
 #include "accel/BvhNode.h"
 /*============================================================================*/
@@ -47,7 +47,8 @@ __device__ __host__ __inline__
 HitPoint Scene::IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const
 {
     HitPoint oHitPoint{rHitPointBefore};
-    bvh::BvhNode const * const pRoot = &m_pBvhs[m_pTriangleObjects[iTriangleObjectIndex].m_iBvhStart];
+    auto iGeometryIndex = m_pTriangleObjects[iTriangleObjectIndex].m_iTriangleGeometry;
+    bvh::BvhNode const * const pRoot = &m_pBvhs[m_pTriangleGeometryDesc[iGeometryIndex].m_iBvhStart];
 
     int aiTraversalStack[64];
     int iStackIndex = 0;
@@ -67,7 +68,7 @@ HitPoint Scene::IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPo
         {
             if (pCurrentNode->m_bIsLeaf)
             {
-                size_t iBegin = m_pTriangleObjects[iTriangleObjectIndex].m_iStartIndex + pCurrentNode->m_iTriangleIndex;
+                size_t iBegin = m_pTriangleGeometryDesc[iGeometryIndex].m_iStartIndex + pCurrentNode->m_iTriangleIndex;
                 size_t iEnd = iBegin + pCurrentNode->m_iNumberOfTriangles;
 
                 for (size_t iTriangleIndex = iBegin; iTriangleIndex < iEnd; ++iTriangleIndex)

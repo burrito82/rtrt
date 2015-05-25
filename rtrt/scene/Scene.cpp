@@ -3,7 +3,7 @@
 /* INCLUDES                                                                   */
 /*============================================================================*/
 #include "Scene.cuh"
-#include "Triangle.cuh"
+#include "Triangle.h"
 #include "../Assert.h"
 #include "../cuda/Device.h"
 #include "../cuda/TypeVerifier.h"
@@ -71,10 +71,11 @@ private:
 /*============================================================================*/
 Scene::Scene():
     m_pSceneCuda{std::make_shared<SceneCuda>()},
-    m_vecTriangleObjects{},
+    m_vecTriangleGeometryDesc{},
     m_vecPoints{},
     m_vecNormals{},
     m_oBvhManager{this},
+    m_vecTriangleObjects{},
     m_vecMaterials{},
     m_vecPointLights{}
 {
@@ -84,15 +85,15 @@ Scene::Scene():
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
 
-void Scene::AddObject(TriangleObject const &rTriangleObject)
+size_t Scene::AddGeometry(TriangleGeometry const &rTriangleGeometry)
 {
-    Assert(rTriangleObject.m_vecPoints.size() == rTriangleObject.m_vecNormals.size(), "Every vertex must have a normal!");
+    Assert(rTriangleGeometry.m_vecPoints.size() == rTriangleGeometry.m_vecNormals.size(), "Every vertex must have a normal!");
     auto iPointsNow = m_vecPoints.size();
-    cuda::TriangleObjectDesc oTriangleObjDesc{};
+    cuda::TriangleGeometryDesc oTriangleObjDesc{};
     oTriangleObjDesc.m_iStartIndex = iPointsNow / 3u;
-    oTriangleObjDesc.m_iNumberOfTriangles = rTriangleObject.m_vecPoints.size() / 3u;
-    std::copy(std::begin(rTriangleObject.m_vecPoints), std::end(rTriangleObject.m_vecPoints), std::back_inserter(m_vecPoints));
-    std::copy(std::begin(rTriangleObject.m_vecNormals), std::end(rTriangleObject.m_vecNormals), std::back_inserter(m_vecNormals));
+    oTriangleObjDesc.m_iNumberOfTriangles = rTriangleGeometry.m_vecPoints.size() / 3u;
+    std::copy(std::begin(rTriangleGeometry.m_vecPoints), std::end(rTriangleGeometry.m_vecPoints), std::back_inserter(m_vecPoints));
+    std::copy(std::begin(rTriangleGeometry.m_vecNormals), std::end(rTriangleGeometry.m_vecNormals), std::back_inserter(m_vecNormals));
 
     std::vector<bvh::BvhBoundingBox> vecBoundingBoxes = m_oBvhManager.AddBvh(oTriangleObjDesc);
     std::vector<Point> vecPoints(m_vecPoints.size() - iPointsNow);
@@ -109,27 +110,37 @@ void Scene::AddObject(TriangleObject const &rTriangleObject)
     }
     std::copy(std::begin(vecPoints), std::end(vecPoints), std::begin(m_vecPoints) + iPointsNow);
     std::copy(std::begin(vecNormals), std::end(vecNormals), std::begin(m_vecNormals) + iPointsNow);
-    m_vecTriangleObjects.push_back(oTriangleObjDesc);
+    m_vecTriangleGeometryDesc.push_back(oTriangleObjDesc);
+    return m_vecTriangleGeometryDesc.size() - 1u;
 }
 
-void Scene::AddPointLight(PointLight const &rPointLight)
+size_t Scene::AddObject(TriangleObject const &rTriangleObject)
+{
+    m_vecTriangleObjects.push_back(rTriangleObject);
+    return m_vecTriangleObjects.size() - 1u;
+}
+
+size_t Scene::AddPointLight(PointLight const &rPointLight)
 {
     m_vecPointLights.push_back(rPointLight);
+    return m_vecPointLights.size() - 1u;
 }
 
 void Scene::Synchronize()
 {
     m_vecPoints.Synchronize();
     m_vecNormals.Synchronize();
-    m_vecTriangleObjects.Synchronize();
+    m_vecTriangleGeometryDesc.Synchronize();
     m_oBvhManager.Synchronize();
+    m_vecTriangleObjects.Synchronize();
     m_vecMaterials.Synchronize();
     m_vecPointLights.Synchronize();
     m_pSceneCuda->Get().m_pPoints = m_vecPoints.CudaPointer();
     m_pSceneCuda->Get().m_pNormals = m_vecNormals.CudaPointer();
-    m_pSceneCuda->Get().m_pTriangleObjects = m_vecTriangleObjects.CudaPointer();
-    m_pSceneCuda->Get().m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
+    m_pSceneCuda->Get().m_pTriangleGeometryDesc = m_vecTriangleGeometryDesc.CudaPointer();
     m_pSceneCuda->Get().m_pBvhs = m_oBvhManager.CudaPointer();
+    m_pSceneCuda->Get().m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
+    m_pSceneCuda->Get().m_pTriangleObjects = m_vecTriangleObjects.CudaPointer();
     m_pSceneCuda->Get().m_pMaterials = m_vecMaterials.CudaPointer();
     m_pSceneCuda->Get().m_pPointLights = m_vecPointLights.CudaPointer();
     m_pSceneCuda->Synchronize();
@@ -140,11 +151,14 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
     cuda::TypeVerifier::VerifySize();
     cuda::KernelCheck();
     cuda::Scene oCpuScene{};
-    oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
-    oCpuScene.m_pTriangleObjects = m_vecTriangleObjects.data();
+    oCpuScene.m_pTriangleGeometryDesc = m_vecTriangleGeometryDesc.data();
     oCpuScene.m_pPoints = m_vecPoints.data();
     oCpuScene.m_pNormals = m_vecNormals.data();
     oCpuScene.m_pBvhs = m_oBvhManager.data();
+    oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
+    oCpuScene.m_pTriangleObjects = m_vecTriangleObjects.CudaPointer();
+    oCpuScene.m_pMaterials = m_vecMaterials.CudaPointer();
+    oCpuScene.m_pPointLights = m_vecPointLights.CudaPointer();
 
     static rtrt::VectorMemory<Ray> vecRays{};
     static rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecHitPoints{};
@@ -273,8 +287,8 @@ void Scene::Intersect(VectorMemory<Ray> const &rVecRays,
     else
     {
         cuda::Scene oCpuScene{};
-        oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleObjects.size();
-        oCpuScene.m_pTriangleObjects = m_vecTriangleObjects.data();
+        oCpuScene.m_iNumberOfTriangleObjects = m_vecTriangleGeometryDesc.size();
+        oCpuScene.m_pTriangleGeometryDesc = m_vecTriangleGeometryDesc.data();
         oCpuScene.m_pPoints = m_vecPoints.data();
         oCpuScene.m_pNormals = m_vecNormals.data();
         oCpuScene.m_pBvhs = m_oBvhManager.data();

@@ -28,9 +28,9 @@ namespace Loader
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
 
-TriangleObject const LoadObj(std::string const &strFilepath)
+TriangleGeometry const LoadObj(std::string const &strFilepath)
 {
-    TriangleObject oTriangleObject{};
+    TriangleGeometry oTriangleObject{};
     std::ifstream oFileHandle{strFilepath};
     std::string strCurLine{};
     std::vector<Point> vecPoints{};

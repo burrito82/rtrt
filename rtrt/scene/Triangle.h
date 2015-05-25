@@ -1,11 +1,9 @@
-#ifndef RTRT_SCENE_TRIANGLE_CUH
-#define RTRT_SCENE_TRIANGLE_CUH
+#ifndef RTRT_SCENE_TRIANGLE_H
+#define RTRT_SCENE_TRIANGLE_H
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "accel/BvhNode.h"
-#include "../cuda/Defines.h"
 #include "../math/Normal.h"
 #include "../math/Point.h"
 
@@ -32,15 +30,8 @@ namespace cuda
 using TrianglePoints = thrust::tuple<Point, Point, Point>;
 using TriangleNormals = thrust::tuple<Normal, Normal, Normal>;
 
-struct TriangleObjectDesc
-{
-    size_t m_iStartIndex;
-    size_t m_iNumberOfTriangles;
-    size_t m_iBvhStart;
-};
-
 } // namespace cuda
 } // namespace rtrt
 
-#endif // ! RTRT_SCENE_TRIANGLE_CUH
+#endif // ! RTRT_SCENE_TRIANGLE_H
 

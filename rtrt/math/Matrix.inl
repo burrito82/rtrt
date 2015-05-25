@@ -1,5 +1,6 @@
+#ifndef RTRT_MATH_MATRIX_INL
+#define RTRT_MATH_MATRIX_INL
 #include "Matrix.h"
-
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
@@ -21,8 +22,7 @@ namespace rtrt
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
 
-
-Matrix const Matrix::Transposed() const
+RTRTDHL Matrix const Matrix::Transposed() const
 {
     Matrix matResult{};
     for (int i = 0; i < 4; ++i)
@@ -35,7 +35,7 @@ Matrix const Matrix::Transposed() const
     return matResult;
 }
 
-Matrix const Matrix::Scale(float fScale)
+RTRTDHL Matrix const Matrix::Scale(float fScale)
 {
     Matrix matResult{};
     matResult[0][0] = fScale;
@@ -44,7 +44,7 @@ Matrix const Matrix::Scale(float fScale)
     return matResult;
 }
 
-Matrix const Matrix::Translation(Float4 const &v)
+RTRTDHL Matrix const Matrix::Translation(Float4 const &v)
 {
     Matrix matResult{};
     matResult[3][0] = v[0];
@@ -53,7 +53,7 @@ Matrix const Matrix::Translation(Float4 const &v)
     return matResult;
 }
 
-Matrix const Matrix::Rotation(Float4 const &n, float fRadians)
+RTRTDHL Matrix const Matrix::Rotation(Float4 const &n, float fRadians)
 {
     Matrix const nnT
     {
@@ -76,7 +76,7 @@ Matrix const Matrix::Rotation(Float4 const &n, float fRadians)
         - std::sin(fRadians) * X;
 }
 
-Float4 const operator*(Matrix const &mat, Float4 const &v)
+RTRTDHLAPI Float4 const operator*(Matrix const &mat, Float4 const &v)
 {
     return
     {
@@ -87,7 +87,7 @@ Float4 const operator*(Matrix const &mat, Float4 const &v)
     };
 }
 
-Matrix const operator*(Matrix const &lhs, Matrix const &rhs)
+RTRTDHLAPI Matrix const operator*(Matrix const &lhs, Matrix const &rhs)
 {
     return
     {
@@ -98,10 +98,11 @@ Matrix const operator*(Matrix const &lhs, Matrix const &rhs)
     };
 }
 
-Matrix const operator*(float f, Matrix const &mat)
+RTRTDHLAPI Matrix const operator*(float f, Matrix const &mat)
 {
     return mat * Matrix{f, f, f, f};
 }
 
 } // namespace rtrt
 
+#endif // ! RTRT_MATH_MATRIX_INL

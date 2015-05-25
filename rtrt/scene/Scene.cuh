@@ -9,7 +9,9 @@
 #include "PointLight.h"
 #include "Ray.cuh"
 #include "RayTriangleIntersection.cuh"
-#include "Triangle.cuh"
+#include "Triangle.h"
+#include "TriangleGeometryDesc.h"
+#include "TriangleObject.h"
 #include "accel/BvhBoundingBox.h"
 #include "accel/BvhNode.h"
 #include "../cuda/Defines.h"
@@ -68,11 +70,12 @@ struct Scene
     }
 
     size_t m_iNumberOfTriangleObjects;
-    TriangleObjectDesc *m_pTriangleObjects;
+    TriangleGeometryDesc *m_pTriangleGeometryDesc;
     Point *m_pPoints;
     Normal *m_pNormals;
     bvh::BvhNode *m_pBvhs;
 
+    TriangleObject *m_pTriangleObjects;
     Material *m_pMaterials;
     PointLight *m_pPointLights;
 

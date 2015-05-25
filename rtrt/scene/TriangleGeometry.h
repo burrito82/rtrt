@@ -1,13 +1,13 @@
-#ifndef RTRT_SCENE_LOADEROBJ_H
-#define RTRT_SCENE_LOADEROBJ_H
+#ifndef RTRT_SCENE_TRIANGLEGEOMETRY_H
+#define RTRT_SCENE_TRIANGLEGEOMETRY_H
 
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "TriangleGeometry.h"
-#include "../LibraryConfig.h"
-
-#include <string>
+#include "Triangle.h"
+#include "../math/Normal.h"
+#include "../math/Point.h"
+#include <vector>
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -18,8 +18,6 @@
 
 namespace rtrt
 {
-namespace Loader
-{
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
@@ -28,10 +26,24 @@ namespace Loader
 /* CLASS DEFINITIONS                                                          */
 /*============================================================================*/
 
-RTRTAPI TriangleGeometry const LoadObj(std::string const &strFilepath);
+/**
+ * @param
+ * @return
+ * @see
+ * @todo
+ * @bug
+ * @deprecated
+ */
+class TriangleGeometry
+{
+public:
+    std::vector<Point> m_vecPoints;
+    std::vector<Normal> m_vecNormals;
+protected:
+private:
+};
 
-} // namespace Loader
 } // namespace rtrt
 
-#endif // ! RTRT_SCENE_LOADEROBJ_H
+#endif // ! RTRT_SCENE_TRIANGLEGEOMETRY_H
 

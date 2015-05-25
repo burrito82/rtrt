@@ -5,7 +5,7 @@ set( RelativeSourceGroup "source\\math" )
 set( SubDirs )
 
 set( DirFiles
-    Matrix.cpp
+    Matrix.inl
     Matrix.h
     Normal.inl
     Normal.h

@@ -4,10 +4,8 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "Triangle.cuh"
-#include "../math/Normal.h"
-#include "../math/Point.h"
-#include <vector>
+#include "Material.h"
+#include "../math/Matrix.h"
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
@@ -34,13 +32,12 @@ namespace rtrt
  * @bug
  * @deprecated
  */
-class TriangleObject
+struct TriangleObject
 {
-public:
-    std::vector<Point> m_vecPoints;
-    std::vector<Normal> m_vecNormals;
-protected:
-private:
+    size_t m_iTriangleGeometry;
+    Material m_oMaterial;
+    Matrix m_matInvTransformation;
+    Matrix m_matTransformation;
 };
 
 } // namespace rtrt
