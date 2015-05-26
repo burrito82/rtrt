@@ -58,7 +58,7 @@ public:
                    VectorMemory<cuda::HitPoint, GPU_TO_CPU> &rVecHitPoints,
                    Hardware eHardware = GPU);
 
-    std::vector<unsigned char> Test(int iWidth = 150, int iHeight = 80, Hardware eHardware = GPU);
+    std::vector<unsigned char> Test(int iWidth = 150, int iHeight = 80, Hardware eHardware = GPU, Matrix const &rMatTransformation = Matrix{});
 
     cuda::TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
     {

@@ -147,7 +147,7 @@ void Scene::Synchronize()
     m_pSceneCuda->Synchronize();
 }
 
-std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardware)
+std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardware, Matrix const &rMatTransformation)
 {
     cuda::TypeVerifier::VerifySize();
     cuda::KernelCheck();
@@ -157,7 +157,7 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
     float z = 0.0f;
     bool bDraw = (iWidth < 160);
 
-    if (vecRays.size() != iWidth * iHeight)
+    //if (vecRays.size() != iWidth * iHeight)
     {
         vecRays.resize(iWidth * iHeight);
         float fCameraExtentX = 4.0f;
@@ -167,33 +167,33 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
 #pragma omp parallel for
             for (int xStep = 0; xStep < iWidth; ++xStep)
             {
-                /*vecRays[xStep + yStep * iWidth] = Ray{
+                /*vecRays[xStep + yStep * iWidth] = Ray{Point{rMatTransformation *
                     Point
                     {
                         fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth) - 0.5f),
                         -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight) - 0.5f),
                         z
-                    },
-                    Normal
+                    }},
+                    Normal{rMatTransformation * Normal{
                     {
                         0.0f,
                         0.0f,
                         -1.0f
-                    }
+                    }}}
                 };*/
-                vecRays[xStep + yStep * iWidth] = Ray{
+                vecRays[xStep + yStep * iWidth] = Ray{Point{rMatTransformation *
                     Point
                     {
                         0.0f,
                         0.0f,
                         z
-                    },
-                    Normal
+                    }},
+                    Normal{rMatTransformation * Normal{
                     {
                         fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth)-0.5f),
                         -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight)-0.5f),
                         -2.0f
-                    }
+                    }}}
                 };
             }
         }
