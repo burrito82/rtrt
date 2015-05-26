@@ -4,12 +4,12 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
-#include "HitPoint.h"
-#include "Ray.cuh"
-#include "RayTriangleIntersection.cuh"
-#include "Triangle.h"
-#include "accel/BvhBoundingBox.h"
-#include "accel/BvhNode.h"
+#include "../HitPoint.h"
+#include "../Ray.cuh"
+#include "../RayTriangleIntersection.cuh"
+#include "../Triangle.h"
+#include "BvhBoundingBox.h"
+#include "BvhNode.h"
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/

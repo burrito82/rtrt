@@ -4,10 +4,10 @@
 /*============================================================================*/
 /* INCLUDES                                                                   */
 /*============================================================================*/
+#include "../cuda/Math.h"
 #include "../math/Point.h"
 #include "../LibraryConfig.h"
 
-#include <algorithm>
 #include <limits>
 /*============================================================================*/
 /* DEFINES                                                                    */
@@ -96,12 +96,12 @@ struct RTRTAPI BoundingBox
 
     BoundingBox &Grow(BoundingBox const &rhs)
     {
-        min.x = std::min(min.x, rhs.min.x);
-        min.y = std::min(min.y, rhs.min.y);
-        min.z = std::min(min.z, rhs.min.z);
-        max.x = std::max(max.x, rhs.max.x);
-        max.y = std::max(max.y, rhs.max.y);
-        max.z = std::max(max.z, rhs.max.z);
+        min.x = cuda::min(min.x, rhs.min.x);
+        min.y = cuda::min(min.y, rhs.min.y);
+        min.z = cuda::min(min.z, rhs.min.z);
+        max.x = cuda::max(max.x, rhs.max.x);
+        max.y = cuda::max(max.y, rhs.max.y);
+        max.z = cuda::max(max.z, rhs.max.z);
         return *this;
     }
 };

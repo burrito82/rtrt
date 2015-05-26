@@ -195,12 +195,12 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
                         0.0f,
                         z
                     }},
-                    Normal{rMatTransformation * Normal{
+                    Normal{rMatTransformation * Normal
                     {
                         fCameraExtentX * (static_cast<float>(xStep) / static_cast<float>(iWidth)-0.5f),
                         -fCameraExtentY * (static_cast<float>(yStep) / static_cast<float>(iHeight)-0.5f),
                         -2.0f
-                    }}}
+                    }}
                 };
             }
         }

@@ -39,7 +39,7 @@ namespace bvh
 class BvhManager
 {
 public:
-    explicit BvhManager::BvhManager(Scene *pScene);
+    explicit BvhManager(Scene *pScene);
 
     std::vector<bvh::BvhBoundingBox> AddBvh(cuda::TriangleGeometryDesc &rTriangleGeometryDesc);
     void Synchronize();
