@@ -67,7 +67,7 @@ public:
             return lhs.Center()[iBiggestDim] < rhs.Center()[iBiggestDim];
         });
 
-        std::vector<decltype(m_itEnd)> vecBinIterators(iBins + 1);
+        std::vector<VectorMemory<BvhBoundingBox>::iterator> vecBinIterators(iBins + 1);
         std::vector<BoundingBox> vecLeftBoundingBoxes(iBins);
         std::vector<BoundingBox> vecRightBoundingBoxes(iBins);
         std::vector<float> vecSAH(iBins);

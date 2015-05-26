@@ -10,6 +10,7 @@
 #include <vector_functions.h>
 #include <vector_types.h>
 #endif // ! RTRT_USE_CUDA
+#include <cstddef>
 #include <cmath>
 /*============================================================================*/
 /* DEFINES                                                                    */
