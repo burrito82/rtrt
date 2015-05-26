@@ -10,7 +10,11 @@ endif( NOT rtrt_COMMON_BUILD )
 
 include( VistaCommon )
 
-vista_use_package( CUDA 6.0 REQUIRED FIND_DEPENDENCIES)
+option (RTRT_USE_CUDA "Rtrt with CUDA support" off)
+if (RTRT_USE_CUDA)
+    add_definitions(-DRTRT_USE_CUDA)
+    vista_use_package( CUDA 6.0 REQUIRED FIND_DEPENDENCIES)
+endif (RTRT_USE_CUDA)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -60,7 +64,12 @@ endif( CUDA_KERNEL_VERBOSE )
 
 
 include( "./rtrt/_SourceFiles.cmake" )
+
+if (RTRT_USE_CUDA)
 CUDA_ADD_LIBRARY( rtrt ${ProjectSources})
+else (RTRT_USE_CUDA)
+add_library( rtrt ${ProjectSources})
+endif (RTRT_USE_CUDA)
 #END CUDA
 
 #The following line prevent CMake from adding all depencies to other projects that link it from within the same cmake build

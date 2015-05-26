@@ -7,7 +7,17 @@
 #include "Assert.h"
 #include "../Assert.h"
 
+#ifdef RTRT_USE_CUDA
 #include <cuda_runtime.h>
+#else // ! RTRT_USE_CUDA
+#define cudaSetDevice(i) 0
+#define cudaGetDeviceCount(p) 0
+#define cudaGetDeviceProperties(p, i) 0
+struct cudaDeviceProp
+{
+
+};
+#endif // ! RTRT_USE_CUDA
 
 #include <stdexcept>
 #include <string>

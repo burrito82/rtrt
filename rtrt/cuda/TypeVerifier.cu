@@ -14,8 +14,12 @@
 #include "../scene/Material.h"
 #include "../scene/Ray.cuh"
 
+#ifdef RTRT_USE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
+#else // ! RTRT_USE_CUDA
+#define __global__
+#endif // ! RTRT_USE_CUDA
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/

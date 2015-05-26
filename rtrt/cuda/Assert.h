@@ -6,7 +6,15 @@
 /*============================================================================*/
 #include "../Assert.h"
 
+#ifdef RTRT_USE_CUDA
 #include <cuda_runtime.h>
+#else // ! RTRT_USE_CUDA
+using cudaError_t = int;
+#define cudaSuccess 0
+#define cudaErrorCudartUnloading 1
+#define cudaGetErrorString(x) nullptr
+#define cudaDeviceSynchronize() (cudaSuccess)
+#endif // ! RTRT_USE_CUDA
 
 #include <stdexcept>
 #include <string>

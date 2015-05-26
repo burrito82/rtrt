@@ -5,7 +5,13 @@
 /* INCLUDES                                                                   */
 /*============================================================================*/
 #include "Assert.h"
+#ifdef RTRT_USE_CUDA
 #include <cuda.h>
+#else // ! RTRT_USE_CUDA
+#define cudaMalloc(x, y) 0
+#define cudaMemcpy(dst, src, size, dir) 0
+#define cudaFree(x) 0
+#endif // ! RTRT_USE_CUDA
 #include <initializer_list>
 #include <memory>
 #include <vector>

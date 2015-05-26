@@ -52,7 +52,7 @@ struct Scene
     
     RTRTDHL TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
     {
-        return
+        return TrianglePoints
         {
             m_pPoints[3 * iTriangleIndex],
             m_pPoints[3 * iTriangleIndex + 1],
@@ -62,7 +62,7 @@ struct Scene
 
     RTRTDHL TriangleNormals GetTriangleNormals(size_t iTriangleIndex) const
     {
-        return
+        return TriangleNormals
         {
             m_pNormals[3 * iTriangleIndex],
             m_pNormals[3 * iTriangleIndex + 1],
@@ -88,6 +88,7 @@ private:
     RTRTDHL HitPoint IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const;
 };
 
+#ifdef RTRT_USE_CUDA
 namespace kernel
 {
 
@@ -100,6 +101,7 @@ __global__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iN
 
 } // namespace impl
 } // namespace kernel
+#endif // ! RTRT_USE_CUDA
 
 } // namespace cuda
 } // namespace rtrt

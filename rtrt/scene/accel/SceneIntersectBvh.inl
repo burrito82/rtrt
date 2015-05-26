@@ -144,6 +144,7 @@ HitPoint Scene::IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPo
     return oHitPoint;
 }
 
+#ifdef RTRT_USE_CUDA
 namespace kernel
 {
 
@@ -156,6 +157,7 @@ __global__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iN
 
 } // namespace impl
 } // namespace kernel
+#endif // ! RTRT_USE_CUDA
 
 } // namespace cuda
 } // namespace rtrt

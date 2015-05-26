@@ -27,6 +27,7 @@ namespace cuda
 /*============================================================================*/
 /* LOCAL VARS AND FUNCS                                                       */
 /*============================================================================*/
+#ifdef RTRT_USE_CUDA
 template<typename T>
 void Verify()
 {
@@ -41,6 +42,7 @@ void Verify()
         throw RtrtException(strError);
     }
 }
+#endif // ! RTRT_USE_CUDA
 /*============================================================================*/
 /* CONSTRUCTORS / DESTRUCTOR                                                  */
 /*============================================================================*/
@@ -49,6 +51,7 @@ void Verify()
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
 
+#ifdef RTRT_USE_CUDA
 bool TypeVerifier::VerifySize()
 {
     Verify<HitPoint>();
@@ -61,6 +64,14 @@ bool TypeVerifier::VerifySize()
     return true;
 }
 
+#else // ! RTRT_USE_CUDA
+
+bool TypeVerifier::VerifySize()
+{
+    return true;
+}
+
 } // namespace cuda
 } // namespace rtrt
 
+#endif // ! RTRT_USE_CUDA

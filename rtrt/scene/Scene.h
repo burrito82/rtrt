@@ -63,7 +63,7 @@ public:
 
     cuda::TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
     {
-        return
+        return cuda::TrianglePoints
         {
             m_vecPoints[3 * iTriangleIndex],
             m_vecPoints[3 * iTriangleIndex + 1],
@@ -73,7 +73,7 @@ public:
 
     cuda::TriangleNormals GetTriangleNormals(size_t iTriangleIndex) const
     {
-        return
+        return cuda::TriangleNormals
         {
             m_vecNormals[3 * iTriangleIndex],
             m_vecNormals[3 * iTriangleIndex + 1],

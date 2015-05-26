@@ -6,8 +6,10 @@
 /*============================================================================*/
 #include "Defines.h"
 
+#ifdef RTRT_USE_CUDA
 #include <vector_functions.h>
 #include <vector_types.h>
+#endif // ! RTRT_USE_CUDA
 #include <cmath>
 /*============================================================================*/
 /* DEFINES                                                                    */
@@ -21,6 +23,18 @@ namespace rtrt
 /*============================================================================*/
 /* STRUCT DEFINITIONS                                                         */
 /*============================================================================*/
+
+#ifndef RTRT_USE_CUDA
+struct float4
+{
+	float x, y, z, w;
+};
+
+static float4 make_float4(float x = 0.0f, float y = 0.0f, float z = 0.0f, float w = 0.0f)
+{
+	return float4{x, y, z, w};
+}
+#endif // ! RTRT_USE_CUDA
 
 struct Float4 : public float4
 {

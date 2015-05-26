@@ -8,7 +8,14 @@
 #include "Triangle.h"
 #include "../math/Vector.h"
 
+#ifdef RTRT_USE_CUDA
 #include <cuda.h>
+#else // ! RTRT_USE_CUDA
+struct int3
+{
+	int x,y,z;
+};
+#endif // ! RTRT_USE_CUDA
 #include <math.h>
 /*============================================================================*/
 /* DEFINES                                                                    */

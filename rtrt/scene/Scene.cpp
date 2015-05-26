@@ -387,11 +387,13 @@ void Scene::Intersect(VectorMemory<Ray> const &rVecRays,
     rVecHitPoints.resize(rVecRays.size());
     if (eHardware == GPU)
     {
+#ifdef RTRT_USE_CUDA
         cuda::KernelCheck();
         cuda::kernel::Raytrace(m_pSceneCuda->CudaPointer(), rVecRays.CudaPointer(), rVecRays.size(), rVecHitPoints.CudaPointer());
         cuda::KernelCheck();
         rVecHitPoints.Synchronize();
         cuda::KernelCheck();
+#endif // ! RTRT_USE_CUDA
     }
     else
     {

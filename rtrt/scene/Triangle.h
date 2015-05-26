@@ -7,7 +7,12 @@
 #include "../math/Normal.h"
 #include "../math/Point.h"
 
+#ifdef RTRT_USE_CUDA
 #include <thrust/tuple.h>
+#else // ! RTRT_USE_CUDA
+#include <tuple>
+namespace thrust = std;
+#endif // ! RTRT_USE_CUDA
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/

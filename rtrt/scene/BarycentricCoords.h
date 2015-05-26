@@ -8,7 +8,12 @@
 #include "../cuda/Float4.cuh"
 #include"../math/Vector.h"
 
+#ifdef RTRT_USE_CUDA
 #include <thrust/tuple.h>
+#else // ! RTRT_USE_CUDA
+#include <tuple>
+namespace thrust = std;
+#endif // ! RTRT_USE_CUDA
 /*============================================================================*/
 /* DEFINES                                                                    */
 /*============================================================================*/
