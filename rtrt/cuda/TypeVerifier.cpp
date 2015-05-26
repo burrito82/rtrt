@@ -11,6 +11,7 @@
 #include "../math/Point.h"
 #include "../math/Vector.h"
 #include "../scene/HitPoint.h"
+#include "../scene/Material.h"
 #include "../scene/Ray.cuh"
 
 #include <iostream>
@@ -53,6 +54,7 @@ bool TypeVerifier::VerifySize()
     Verify<HitPoint>();
     Verify<Ray>();
     Verify<Float4>();
+    Verify<Material>();
     Verify<Normal>();
     Verify<Point>();
     Verify<Vector>();

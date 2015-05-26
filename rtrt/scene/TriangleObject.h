@@ -35,7 +35,7 @@ namespace rtrt
 struct TriangleObject
 {
     size_t m_iTriangleGeometry;
-    Material m_oMaterial;
+    size_t m_iMaterial;
     Matrix m_matInvTransformation;
     Matrix m_matTransformation;
 };

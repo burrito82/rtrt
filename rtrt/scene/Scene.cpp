@@ -16,6 +16,7 @@
 #include <chrono>
 #include <cmath>
 #include <iostream>
+#include <tuple>
 #include <vector>
 /*============================================================================*/
 /* MACROS AND DEFINES, CONSTANTS AND STATICS                                  */
@@ -114,6 +115,12 @@ size_t Scene::AddGeometry(TriangleGeometry const &rTriangleGeometry)
     return m_vecTriangleGeometryDesc.size() - 1u;
 }
 
+size_t Scene::AddMaterial(Material const &rMaterial)
+{
+    m_vecMaterials.push_back(rMaterial);
+    return m_vecMaterials.size() - 1u;
+}
+
 size_t Scene::AddObject(TriangleObject oTriangleObject)
 {
     oTriangleObject.m_matInvTransformation = oTriangleObject.m_matTransformation.Inverted();
@@ -199,16 +206,14 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
         }
     }
 
+    auto startTime = std::chrono::system_clock::time_point{};
+    auto duration = std::chrono::system_clock::duration{};
     if (eHardware == CPU)
     {
         // CPU
-        auto startTime = std::chrono::system_clock::now();
+        startTime = std::chrono::system_clock::now();
         Intersect(vecRays, vecHitPoints, CPU);
-        auto duration = std::chrono::system_clock::now() - startTime;
-        std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms\t("
-            << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
-            << vecRays.size() << " rays,\t"
-            << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
+        duration = std::chrono::system_clock::now() - startTime;
     }
 
     if (eHardware == GPU)
@@ -217,14 +222,12 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
         cuda::KernelCheck();
         vecRays.Synchronize();
         cuda::KernelCheck();
-        auto startTime = std::chrono::system_clock::now();
+        startTime = std::chrono::system_clock::now();
         Intersect(vecRays, vecHitPoints, GPU);
-        auto duration = std::chrono::system_clock::now() - startTime;
-        std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms\t("
-            << (static_cast<double>(vecRays.size() / 1000u) / static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count())) << "M rays/s,\t"
-            << vecRays.size() << " rays,\t"
-            << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
+        duration = std::chrono::system_clock::now() - startTime;
     }
+    auto iIntersectionTime = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    auto iNumberOfAllRays = vecRays.size();
 
     // DRAW
     if (bDraw)
@@ -257,30 +260,121 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
     {
         vecResult[4 * i + 3] = 0xff;
     }
-    for (auto const &rLightSource : m_vecPointLights)
-    {
+    using SecondaryRay = std::tuple<Ray, int, int, float>;
+    std::vector<std::vector<SecondaryRay>> vecVecSecondaryRays(iHeight);
 #pragma omp parallel for
-        for (auto i = 0; i < vecHitPoints.size(); ++i)
+    for (auto i = 0; i < vecHitPoints.size(); ++i)
+    {
+        auto const &eye = vecRays[i];
+        auto const &hit = vecHitPoints[i];
+        for (auto iLight = 0; iLight < m_vecPointLights.size(); ++iLight)
         {
-            auto const &eye = vecRays[i];
-            auto const &hit = vecHitPoints[i];
+            auto const &rLightSource = m_vecPointLights[iLight];
             if (hit)
             {
-                float color[] = {
+                float afLightColor[] = {
                     rLightSource.color.r,
                     rLightSource.color.g,
                     rLightSource.color.b,
                     rLightSource.color.a,
                 };
-                for (auto x = 4 * i; x < 4 * i + 3; ++x)
+                float afMatColor[] = {
+                    m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].diffuse.r,
+                    m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].diffuse.g,
+                    m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].diffuse.b,
+                    m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].diffuse.a,
+                };
+                for (auto iPixel = 4 * i; iPixel < 4 * i + 3; ++iPixel)
                 {
-                    vecResult[x] = static_cast<unsigned char>(0xff & std::min(0xff, std::max<int>(0, static_cast<int>(static_cast<float>(
-                        std::max(0.0f, static_cast<float>(vecResult[x])
-                        + color[x % 4] * Dot(hit.n, Normalized(rLightSource.p - hit.p) / Length(rLightSource.p - hit.p))))))));
+                    vecResult[iPixel] = static_cast<unsigned char>(0xff & std::min(0xff, std::max<int>(0, static_cast<int>(static_cast<float>(
+                        std::max(0.0f, static_cast<float>(vecResult[iPixel])
+                        + afLightColor[iPixel % 4] * afMatColor[iPixel % 4] * Dot(hit.n, Normalized(rLightSource.p - hit.p) / Length(rLightSource.p - hit.p))))))));
+                }
+            }
+        }
+        float fReflectivity = m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].m_fReflectivity;
+        if (hit && fReflectivity > 0.0f)
+        {
+            auto x = i % iWidth;
+            auto y = i / iWidth;
+            vecVecSecondaryRays[y].emplace_back(Ray{hit.p + 0.001f * hit.n, Reflect(vecRays[i].direction, hit.n)}, x, y, fReflectivity);
+        }
+    }
+    int const iMaxRecursion = 3;
+    for (int iCurrentRecursionStep = 0; iCurrentRecursionStep < iMaxRecursion; ++iCurrentRecursionStep)
+    {
+        std::vector<SecondaryRay> vecSecondaryRays{};
+        for (auto const &a : vecVecSecondaryRays)
+        {
+            std::move(std::begin(a), std::end(a), std::back_inserter(vecSecondaryRays));
+        }
+        if (!vecSecondaryRays.empty())
+        {
+            VectorMemory<Ray> vecAllSecondaryRays(vecSecondaryRays.size());
+            std::transform(std::begin(vecSecondaryRays), std::end(vecSecondaryRays), std::begin(vecAllSecondaryRays),
+                           [](SecondaryRay const &t)
+            {
+                return std::get<0>(t);
+            });
+            if (eHardware == GPU)
+            {
+                vecAllSecondaryRays.Synchronize();
+            }
+            VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecSecondaryHitPoints(vecAllSecondaryRays.size());
+
+            auto startTimeSR = std::chrono::system_clock::now();
+            Intersect(vecAllSecondaryRays, vecSecondaryHitPoints, eHardware);
+            iIntersectionTime += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTimeSR).count();
+            iNumberOfAllRays += vecRays.size();
+#pragma omp parallel for
+            for (int i = 0; i < vecSecondaryRays.size(); ++i)
+            {
+                auto const &eye = vecAllSecondaryRays[i];
+                auto const &hit = vecSecondaryHitPoints[i];
+                if (hit)
+                {
+                    int x = std::get<1>(vecSecondaryRays[i]);
+                    int y = std::get<2>(vecSecondaryRays[i]);
+                    float fOldReflectivity = std::get<3>(vecSecondaryRays[i]);
+                    for (auto const &rLightSource : m_vecPointLights)
+                    {
+                        float afLightColor[] = {
+                            rLightSource.color.r,
+                            rLightSource.color.g,
+                            rLightSource.color.b,
+                            rLightSource.color.a,
+                        };
+                        float afMatColor[] = {
+                            m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].diffuse.r,
+                            m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].diffuse.g,
+                            m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].diffuse.b,
+                            m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].diffuse.a,
+                        };
+                        for (auto iPixel = 4 * (x + y * iWidth); iPixel < 4 * (x + y * iWidth) + 3; ++iPixel)
+                        {
+                            float fOldColor = static_cast<float>(vecResult[iPixel]);
+                            float fNewColor = afLightColor[iPixel % 4] * afMatColor[iPixel % 4] * std::max(0.0f, Dot(hit.n, Normalized(rLightSource.p - hit.p)) / Length(rLightSource.p - hit.p));
+                            vecResult[iPixel] = static_cast<unsigned char>(0xff & std::min(0xff, std::max<int>(0, static_cast<int>(static_cast<float>(
+                                std::max(0.0f,
+                                (1.0f - fOldReflectivity) * fOldColor
+                                + fOldReflectivity * fNewColor))))));
+                        }
+                    }
+                    float fReflectivity = m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].m_fReflectivity;
+                    if (hit && fReflectivity > 0.0f)
+                    {
+                        vecVecSecondaryRays[y].emplace_back(Ray{hit.p + 0.001f * hit.n, Reflect(vecAllSecondaryRays[i].direction, hit.n)}, x, y, fOldReflectivity * fReflectivity);
+                    }
                 }
             }
         }
     }
+
+    std::cout << "Time elapsed: " << iIntersectionTime << " ms\t("
+        << (static_cast<double>(iNumberOfAllRays / 1000u) / iIntersectionTime) << "M rays/s,\t"
+        << iNumberOfAllRays << " rays,\t"
+        << (m_vecPoints.size() / 3u) << " triangles)" << std::endl;
+
     return vecResult;
 }
 
@@ -288,6 +382,8 @@ void Scene::Intersect(VectorMemory<Ray> const &rVecRays,
                       VectorMemory<cuda::HitPoint, GPU_TO_CPU> &rVecHitPoints,
                       Hardware eHardware)
 {
+    if (rVecRays.empty())
+        return;
     rVecHitPoints.resize(rVecRays.size());
     if (eHardware == GPU)
     {

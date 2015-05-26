@@ -20,6 +20,7 @@ struct Material
 {
     Color diffuse;
     Color specular;
+    float m_fReflectivity;
 };
 
 } // namespace rtrt

@@ -145,6 +145,11 @@ float AbsDot(Normal const &lhs, Vector const &rhs)
     return std::abs(Dot(lhs, rhs));
 }
 
+RTRTDHLAPI Normal Reflect(Normal const &incoming, Normal const &n)
+{
+    return Normal{incoming - 2.0f * n * Dot(incoming, n)};
+}
+
 __device__ __host__ __inline__
 Normal FaceForward(Normal const &n, Vector const &v)
 {

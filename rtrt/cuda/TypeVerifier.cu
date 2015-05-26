@@ -11,6 +11,7 @@
 #include "../math/Point.h"
 #include "../math/Vector.h"
 #include "../scene/HitPoint.h"
+#include "../scene/Material.h"
 #include "../scene/Ray.cuh"
 
 #include <cuda.h>
@@ -69,6 +70,12 @@ __host__
 size_t GetTypeSize(Float4 const &)
 {
     return GetTypeSize<Float4>();
+}
+
+__host__
+size_t GetTypeSize(Material const &)
+{
+    return GetTypeSize<Material>();
 }
 
 __host__

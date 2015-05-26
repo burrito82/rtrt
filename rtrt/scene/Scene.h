@@ -49,6 +49,7 @@ public:
     Scene();
 
     size_t AddGeometry(TriangleGeometry const &rTriangleGeometry);
+    size_t AddMaterial(Material const &rMaterial);
     size_t AddObject(TriangleObject oTriangleObject);
     size_t AddPointLight(PointLight const &rPointLight);
 

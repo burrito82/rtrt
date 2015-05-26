@@ -16,6 +16,7 @@ namespace rtrt
 {
 struct Ray;
 struct Float4;
+struct Material;
 struct Normal;
 struct Point;
 struct Vector;
@@ -29,6 +30,7 @@ struct HitPoint;
 size_t GetTypeSize(HitPoint const &);
 size_t GetTypeSize(Ray const &);
 size_t GetTypeSize(Float4 const &);
+size_t GetTypeSize(Material const &);
 size_t GetTypeSize(Normal const &);
 size_t GetTypeSize(Point const &);
 size_t GetTypeSize(Vector const &);

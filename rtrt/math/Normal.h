@@ -78,6 +78,7 @@ RTRTDHLAPI float Dot(Normal const &lhs, Vector const &rhs);
 RTRTDHLAPI float AbsDot(Normal const &lhs, Normal const &rhs);
 RTRTDHLAPI float AbsDot(Vector const &lhs, Normal const &rhs);
 RTRTDHLAPI float AbsDot(Normal const &lhs, Vector const &rhs);
+RTRTDHLAPI Normal Reflect(Normal const &incoming, Normal const &n);
 RTRTDHLAPI Normal FaceForward(Normal const &n, Vector const &v);
 
 } // namespace rtrt
