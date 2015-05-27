@@ -297,8 +297,15 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
                     {
                         vecResult[iPixel] = static_cast<unsigned char>(0xff & std::min(0xff, std::max<int>(0, static_cast<int>(static_cast<float>(
                             std::max(0.0f, static_cast<float>(vecResult[iPixel])
-                            + afLightColor[iPixel % 4] * afMatColor[iPixel % 4] * Dot(hit.n, Normalized(rLightSource.p - hit.p) / Length(rLightSource.p - hit.p))))))));
+                            + 255.0f * afLightColor[iPixel % 4] * afMatColor[iPixel % 4] * Dot(hit.n, Normalized(rLightSource.p - hit.p) / Length(rLightSource.p - hit.p))))))));
                     }
+                }
+                else
+                {
+                    // hardcoded background color
+                    vecResult[4 * i] = (unsigned char)(0.057f * 255.0f);
+                    vecResult[4 * i + 1] = (unsigned char)(0.221f * 255.0f);
+                    vecResult[4 * i + 2] = (unsigned char)(0.4f * 255.0f);
                 }
             }
             float fReflectivity = m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].m_fReflectivity;
@@ -342,11 +349,12 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
         {
             auto const &eye = vecAllSecondaryRays[i];
             auto const &hit = vecSecondaryHitPoints[i];
+            int x = std::get<1>(vecSecondaryRays[i]);
+            int y = std::get<2>(vecSecondaryRays[i]);
+            float fOldReflectivity = std::get<3>(vecSecondaryRays[i]);
+
             if (hit)
             {
-                int x = std::get<1>(vecSecondaryRays[i]);
-                int y = std::get<2>(vecSecondaryRays[i]);
-                float fOldReflectivity = std::get<3>(vecSecondaryRays[i]);
                 for (auto const &rLightSource : m_vecPointLights)
                 {
                     float afLightColor[] = {
@@ -363,12 +371,12 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
                     };
                     for (auto iPixel = 4 * (x + y * iWidth); iPixel < 4 * (x + y * iWidth) + 3; ++iPixel)
                     {
-                        float fOldColor = static_cast<float>(vecResult[iPixel]);
+                        float fOldColor = static_cast<float>(vecResult[iPixel]) / 255.0f;
                         float fNewColor = afLightColor[iPixel % 4] * afMatColor[iPixel % 4] * std::max(0.0f, Dot(hit.n, Normalized(rLightSource.p - hit.p)) / Length(rLightSource.p - hit.p));
                         vecResult[iPixel] = static_cast<unsigned char>(0xff & std::min(0xff, std::max<int>(0, static_cast<int>(static_cast<float>(
-                            std::max(0.0f,
+                            std::max(0.0f, 255.0f * (
                             (1.0f - fOldReflectivity) * fOldColor
-                            + fOldReflectivity * fNewColor))))));
+                            + fOldReflectivity * fNewColor)))))));
                     }
                 }
                 float fReflectivity = m_vecMaterials[m_vecTriangleObjects[hit.m_iObjectIndex].m_iMaterial].m_fReflectivity;
@@ -376,6 +384,20 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
                 {
                     vecVecSecondaryRays[y].emplace_back(Ray{hit.p + 0.001f * hit.n, Reflect(vecAllSecondaryRays[i].direction, hit.n)}, x, y, fOldReflectivity * fReflectivity);
                 }
+            }
+            else
+            {
+                auto iPixel = 4 * (x + y * iWidth);
+                float fOldRed = static_cast<float>(vecResult[iPixel]) / 255.0f;
+                float fOldGreen = static_cast<float>(vecResult[iPixel + 1]) / 255.0f;
+                float fOldBlue = static_cast<float>(vecResult[iPixel + 2]) / 255.0f;
+                // hardcoded background color
+                //vecResult[iPixel] = 0xff & (int)(255.0f * 0.057f);// std::max<int>(255, (1.0f - fOldReflectivity) * fOldRed + fOldReflectivity * 0.057f);
+                //vecResult[iPixel + 1] = 0xff & (int)(255.0f * 0.221f); //std::max<int>(255, (1.0f - fOldReflectivity) * fOldGreen + fOldReflectivity * 0.221f);
+                //vecResult[iPixel + 2] = 0xff & (int)(255.0f * 0.4f); //std::max<int>(255, (1.0f - fOldReflectivity) * fOldBlue + fOldReflectivity * 0.4f);
+                vecResult[iPixel] = 0xff & std::min<int>(255, 255.0f * ((1.0f - fOldReflectivity) * fOldRed + fOldReflectivity * 0.057f));
+                vecResult[iPixel + 1] = 0xff & std::min<int>(255, 255.0f * ((1.0f - fOldReflectivity) * fOldGreen + fOldReflectivity * 0.221f));
+                vecResult[iPixel + 2] = 0xff & std::min<int>(255, 255.0f * ((1.0f - fOldReflectivity) * fOldBlue + fOldReflectivity * 0.4f));
             }
         }
     }
