@@ -113,6 +113,26 @@ struct RTRTAPI Matrix
         return *this;
     }
 
+    RTRTDHL bool operator!=(Matrix const &mat) const
+    {
+        return (m_aRows[0][0] != mat[0][0]
+                || m_aRows[0][1] != mat[0][1]
+                || m_aRows[0][2] != mat[0][2]
+                || m_aRows[0][3] != mat[0][3]
+                || m_aRows[1][0] != mat[1][0]
+                || m_aRows[1][1] != mat[1][1]
+                || m_aRows[1][2] != mat[1][2]
+                || m_aRows[1][3] != mat[1][3]
+                || m_aRows[2][0] != mat[2][0]
+                || m_aRows[2][1] != mat[2][1]
+                || m_aRows[2][2] != mat[2][2]
+                || m_aRows[2][3] != mat[2][3]
+                || m_aRows[3][0] != mat[3][0]
+                || m_aRows[3][1] != mat[3][1]
+                || m_aRows[3][2] != mat[3][2]
+                || m_aRows[3][3] != mat[3][3]);
+    }
+
     RTRTDHL Matrix const Transposed() const;
     RTRTDHL Matrix const Inverted() const;
     RTRTDHL static Matrix const Scale(float fScale);
