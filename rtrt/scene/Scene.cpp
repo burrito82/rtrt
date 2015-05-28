@@ -161,11 +161,13 @@ std::vector<unsigned char> Scene::Test(int iWidth, int iHeight, Hardware eHardwa
 
     static rtrt::VectorMemory<Ray> vecRays{};
     static rtrt::VectorMemory<cuda::HitPoint, GPU_TO_CPU> vecHitPoints{};
+    static Matrix matLastMatTransformation{0.0f, 0.0f, 0.0f};
     float z = 0.0f;
     bool bDraw = (iWidth < 160);
 
-    //if (vecRays.size() != iWidth * iHeight)
+    if (matLastMatTransformation != rMatTransformation)
     {
+        matLastMatTransformation = rMatTransformation;
         vecRays.resize(iWidth * iHeight);
         float fCameraExtentX = 4.0f;
         float fCameraExtentY = fCameraExtentX / iWidth * iHeight;
