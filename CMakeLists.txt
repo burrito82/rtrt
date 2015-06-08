@@ -1,19 +1,25 @@
 # $Id:$
 
 cmake_minimum_required( VERSION 2.8 )
-if( NOT rtrt_COMMON_BUILD )
-	project( rtrt )
+project( rtrt )
 
+option(USE_VISTA "Use Vista CMake build system" off)
+if(USE_VISTA)
 	list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
 	include( VistaCommon )
-endif( NOT rtrt_COMMON_BUILD )
 
 include( VistaCommon )
+endif(USE_VISTA)
 
 option (RTRT_USE_CUDA "Rtrt with CUDA support" off)
 if (RTRT_USE_CUDA)
     add_definitions(-DRTRT_USE_CUDA)
-    vista_use_package( CUDA 6.0 REQUIRED FIND_DEPENDENCIES)
+    if(USE_VISTA)
+        vista_use_package( CUDA 6.0 REQUIRED FIND_DEPENDENCIES)
+    else(USE_VISTA)
+        include(GenerateExportHeader)
+        find_package(CUDA)
+    endif(USE_VISTA)
 endif (RTRT_USE_CUDA)
 
 find_package(OpenMP)
@@ -68,19 +74,19 @@ endif( CUDA_KERNEL_VERBOSE )
 
 
 include( "./rtrt/_SourceFiles.cmake" )
-
 if (RTRT_USE_CUDA)
-CUDA_ADD_LIBRARY( rtrt ${ProjectSources})
+CUDA_ADD_LIBRARY( rtrt SHARED ${ProjectSources})
 else (RTRT_USE_CUDA)
-add_library( rtrt ${ProjectSources})
+add_library( rtrt SHARED ${ProjectSources})
 endif (RTRT_USE_CUDA)
 #END CUDA
 
 #The following line prevent CMake from adding all depencies to other projects that link it from within the same cmake build
 set_property( TARGET rtrt PROPERTY LINK_INTERFACE_LIBRARIES "" )
-target_link_libraries( rtrt
+target_link_libraries( rtrt 
 )
 
+if(USE_VISTA)
 vista_configure_lib( rtrt )
 #if( rtrt_COMMON_BUILD )
 #    vista_install( rtrt rtrt )
@@ -90,4 +96,5 @@ vista_configure_lib( rtrt )
 
 vista_create_cmake_configs( rtrt )
 vista_create_default_info_file( rtrt )
+endif(USE_VISTA)
 
