@@ -28,7 +28,7 @@ HitPoint Scene::IntersectLinear(Ray const &rRay) const
 {
     HitPoint oHitPoint{};
 
-    for (size_t iTriangleObjectIndex = 0; iTriangleObjectIndex < m_iNumberOfTriangleObjects; ++iTriangleObjectIndex)
+    for (std::size_t iTriangleObjectIndex = 0; iTriangleObjectIndex < m_iNumberOfTriangleObjects; ++iTriangleObjectIndex)
     {
         HitPoint oTmpHitPoint = IntersectLinear(rRay, iTriangleObjectIndex, oHitPoint);
         if (oTmpHitPoint && oTmpHitPoint.m_fDistance < oHitPoint.m_fDistance)
@@ -41,7 +41,7 @@ HitPoint Scene::IntersectLinear(Ray const &rRay) const
 }
 
 __device__ __host__ __inline__
-HitPoint Scene::IntersectLinear(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const
+HitPoint Scene::IntersectLinear(Ray const &rRay, std::size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const
 {
     using thrust::get;
     HitPoint oHitPoint{rHitPointBefore};
@@ -51,10 +51,10 @@ HitPoint Scene::IntersectLinear(Ray const &rRay, size_t iTriangleObjectIndex, Hi
         Point{rTriangleObject.m_matInvTransformation * rRay.origin},
         Normal{rTriangleObject.m_matInvTransformation * rRay.direction}
     };
-    size_t const iTriangleBegin = m_pTriangleGeometryDesc[rTriangleObject.m_iTriangleGeometry].m_iStartIndex;
-    size_t const iTriangleEnd = m_pTriangleGeometryDesc[rTriangleObject.m_iTriangleGeometry].m_iNumberOfTriangles + iTriangleBegin;
+    std::size_t const iTriangleBegin = m_pTriangleGeometryDesc[rTriangleObject.m_iTriangleGeometry].m_iStartIndex;
+    std::size_t const iTriangleEnd = m_pTriangleGeometryDesc[rTriangleObject.m_iTriangleGeometry].m_iNumberOfTriangles + iTriangleBegin;
 
-    for (size_t iTriangleIndex = iTriangleBegin; iTriangleIndex < iTriangleEnd; ++iTriangleIndex)
+    for (std::size_t iTriangleIndex = iTriangleBegin; iTriangleIndex < iTriangleEnd; ++iTriangleIndex)
     {
         float fDistance = IntersectTriangleWoop(oRay, GetTrianglePoints(iTriangleIndex));
         if (fDistance > 0.0f

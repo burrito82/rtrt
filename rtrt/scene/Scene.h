@@ -48,10 +48,10 @@ public:
 
     Scene();
 
-    size_t AddGeometry(TriangleGeometry const &rTriangleGeometry);
-    size_t AddMaterial(Material const &rMaterial);
-    size_t AddObject(TriangleObject oTriangleObject);
-    size_t AddPointLight(PointLight const &rPointLight);
+    std::size_t AddGeometry(TriangleGeometry const &rTriangleGeometry);
+    std::size_t AddMaterial(Material const &rMaterial);
+    std::size_t AddObject(TriangleObject oTriangleObject);
+    std::size_t AddPointLight(PointLight const &rPointLight);
 
     void Synchronize();
 
@@ -61,7 +61,7 @@ public:
 
     std::vector<unsigned char> Test(int iWidth = 150, int iHeight = 80, Hardware eHardware = GPU, Matrix const &rMatTransformation = Matrix{});
 
-    cuda::TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
+    cuda::TrianglePoints GetTrianglePoints(std::size_t iTriangleIndex) const
     {
         return cuda::TrianglePoints
         {
@@ -71,7 +71,7 @@ public:
         };
     }
 
-    cuda::TriangleNormals GetTriangleNormals(size_t iTriangleIndex) const
+    cuda::TriangleNormals GetTriangleNormals(std::size_t iTriangleIndex) const
     {
         return cuda::TriangleNormals
         {

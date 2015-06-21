@@ -74,7 +74,7 @@ struct RTRTAPI BoundingBox
         return d.x * d.y * d.z;
     }
 
-    size_t MaximumExtent() const
+    std::size_t MaximumExtent() const
     {
         Vector d = max - min;
         if ((d.x > d.y) && (d.x > d.z))

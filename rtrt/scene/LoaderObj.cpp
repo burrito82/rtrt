@@ -70,7 +70,7 @@ TriangleGeometry const LoadObj(std::string const &strFilepath)
             std::string aStrIndizes[3]{};
             ss >> aStrIndizes[0] >> aStrIndizes[1] >> aStrIndizes[2];
 
-            for (size_t i = 0; i < 3; ++i)
+            for (std::size_t i = 0; i < 3; ++i)
             {
                 std::string strVertex = aStrIndizes[i].substr(0u, aStrIndizes[i].find_first_of('/'));;
                 if (strVertex.length() > 0u)

@@ -86,7 +86,7 @@ Scene::Scene():
 /* IMPLEMENTATION                                                             */
 /*============================================================================*/
 
-size_t Scene::AddGeometry(TriangleGeometry const &rTriangleGeometry)
+std::size_t Scene::AddGeometry(TriangleGeometry const &rTriangleGeometry)
 {
     Assert(rTriangleGeometry.m_vecPoints.size() == rTriangleGeometry.m_vecNormals.size(), "Every vertex must have a normal!");
     auto iPointsNow = m_vecPoints.size();
@@ -100,7 +100,7 @@ size_t Scene::AddGeometry(TriangleGeometry const &rTriangleGeometry)
     std::vector<Point> vecPoints(m_vecPoints.size() - iPointsNow);
     std::vector<Normal> vecNormals(m_vecNormals.size() - iPointsNow);
     auto it = std::begin(vecBoundingBoxes);
-    for (size_t i = oTriangleObjDesc.m_iStartIndex; it != std::end(vecBoundingBoxes); ++i, ++it)
+    for (std::size_t i = oTriangleObjDesc.m_iStartIndex; it != std::end(vecBoundingBoxes); ++i, ++it)
     {
         vecPoints[3u * i - iPointsNow] = m_vecPoints[3u * it->m_iTriangleIndex + iPointsNow];
         vecPoints[3u * i - iPointsNow + 1] = m_vecPoints[3u * it->m_iTriangleIndex + iPointsNow + 1u];
@@ -115,20 +115,20 @@ size_t Scene::AddGeometry(TriangleGeometry const &rTriangleGeometry)
     return m_vecTriangleGeometryDesc.size() - 1u;
 }
 
-size_t Scene::AddMaterial(Material const &rMaterial)
+std::size_t Scene::AddMaterial(Material const &rMaterial)
 {
     m_vecMaterials.push_back(rMaterial);
     return m_vecMaterials.size() - 1u;
 }
 
-size_t Scene::AddObject(TriangleObject oTriangleObject)
+std::size_t Scene::AddObject(TriangleObject oTriangleObject)
 {
     oTriangleObject.m_matInvTransformation = oTriangleObject.m_matTransformation.Inverted();
     m_vecTriangleObjects.push_back(oTriangleObject);
     return m_vecTriangleObjects.size() - 1u;
 }
 
-size_t Scene::AddPointLight(PointLight const &rPointLight)
+std::size_t Scene::AddPointLight(PointLight const &rPointLight)
 {
     m_vecPointLights.push_back(rPointLight);
     return m_vecPointLights.size() - 1u;

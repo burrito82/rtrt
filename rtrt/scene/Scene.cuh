@@ -50,7 +50,7 @@ struct Scene
         return oHitPoint;
     }
     
-    RTRTDHL TrianglePoints GetTrianglePoints(size_t iTriangleIndex) const
+    RTRTDHL TrianglePoints GetTrianglePoints(std::size_t iTriangleIndex) const
     {
         return TrianglePoints
         {
@@ -60,7 +60,7 @@ struct Scene
         };
     }
 
-    RTRTDHL TriangleNormals GetTriangleNormals(size_t iTriangleIndex) const
+    RTRTDHL TriangleNormals GetTriangleNormals(std::size_t iTriangleIndex) const
     {
         return TriangleNormals
         {
@@ -70,7 +70,7 @@ struct Scene
         };
     }
 
-    size_t m_iNumberOfTriangleObjects;
+    std::size_t m_iNumberOfTriangleObjects;
     TriangleGeometryDesc *m_pTriangleGeometryDesc;
     Point *m_pPoints;
     Normal *m_pNormals;
@@ -82,22 +82,22 @@ struct Scene
 
 private:
     RTRTDHL HitPoint IntersectLinear(Ray const &rRay) const;
-    RTRTDHL HitPoint IntersectLinear(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const;
+    RTRTDHL HitPoint IntersectLinear(Ray const &rRay, std::size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const;
 
     RTRTDHL HitPoint IntersectBvh(Ray const &rRay) const;
-    RTRTDHL HitPoint IntersectBvh(Ray const &rRay, size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const;
+    RTRTDHL HitPoint IntersectBvh(Ray const &rRay, std::size_t iTriangleObjectIndex, HitPoint const &rHitPointBefore) const;
 };
 
 #ifdef RTRT_USE_CUDA
 namespace kernel
 {
 
-__host__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints);
+__host__ void Raytrace(Scene const * const pScene, Ray const *pRays, std::size_t iNumberOfRays, HitPoint *pHitPoints);
 
 namespace impl
 {
 
-__global__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints);
+__global__ void Raytrace(Scene const * const pScene, Ray const *pRays, std::size_t iNumberOfRays, HitPoint *pHitPoints);
 
 } // namespace impl
 } // namespace kernel

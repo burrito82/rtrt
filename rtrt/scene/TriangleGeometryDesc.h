@@ -26,9 +26,9 @@ namespace cuda
 
 struct TriangleGeometryDesc
 {
-    size_t m_iStartIndex;
-    size_t m_iNumberOfTriangles;
-    size_t m_iBvhStart;
+    std::size_t m_iStartIndex;
+    std::size_t m_iNumberOfTriangles;
+    std::size_t m_iBvhStart;
 };
 
 } // namespace cuda
