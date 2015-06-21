@@ -48,8 +48,8 @@ struct HitPoint
     }
 
     float m_fDistance;
-    size_t m_iTriangleIndex;
-    size_t m_iObjectIndex;
+    std::size_t m_iTriangleIndex;
+    std::size_t m_iObjectIndex;
     BarycentricCoords m_oBaryCoord;
     Point p;
     Normal n;

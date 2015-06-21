@@ -27,7 +27,7 @@ namespace cuda
 namespace kernel
 {
 
-__host__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints)
+__host__ void Raytrace(Scene const * const pScene, Ray const *pRays, std::size_t iNumberOfRays, HitPoint *pHitPoints)
 {
     using cuda::min;
     using cuda::max;
@@ -36,9 +36,9 @@ __host__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iNum
     dim3 blockDim;
     dim3 gridDim;
     
-    for (size_t iBegin = 0ull; iBegin < iNumberOfRays;)
+    for (std::size_t iBegin = 0ull; iBegin < iNumberOfRays;)
     {
-        size_t iNumberOfRaysBatch = min(iNumberOfRays - iBegin, 81920ull);
+        std::size_t iNumberOfRaysBatch = min(iNumberOfRays - iBegin, 81920ull);
         unsigned int iThreadsPerBlock = iMaxThreads;
         unsigned int iGridSize = min<unsigned int>(static_cast<unsigned int>(iNumberOfRaysBatch - 1ull) / iThreadsPerBlock + 1u, iMaxBlocks);
         blockDim.x = iThreadsPerBlock;
@@ -57,9 +57,9 @@ __host__ void Raytrace(Scene const * const pScene, Ray const *pRays, size_t iNum
 namespace impl
 {
 __global__
-void Raytrace(Scene const *pScene, Ray const *pRays, size_t iNumberOfRays, HitPoint *pHitPoints)
+void Raytrace(Scene const *pScene, Ray const *pRays, std::size_t iNumberOfRays, HitPoint *pHitPoints)
 {
-    size_t iLocalId = threadIdx.x + blockIdx.x * blockDim.x;
+    std::size_t iLocalId = threadIdx.x + blockIdx.x * blockDim.x;
     while (iLocalId < iNumberOfRays)
     {
         pHitPoints[iLocalId] = pScene->Intersect(pRays[iLocalId]);
